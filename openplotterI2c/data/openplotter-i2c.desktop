@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=OpenPlotter I2C
+Exec=openplotter-i2c
+Icon=openplotter-i2c
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=OpenPlotter

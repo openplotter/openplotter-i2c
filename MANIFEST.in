@@ -1,0 +1,4 @@
+include LICENSE
+include README.md
+recursive-include openplotterI2c/data *
+recursive-include openplotterI2c/locale *

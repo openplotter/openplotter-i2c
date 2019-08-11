@@ -16,7 +16,7 @@
 # along with Openplotter. If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup
-from openplotterNetwork import version
+from openplotterI2c import version
 
 setup (
 	name = 'openplotterI2c',

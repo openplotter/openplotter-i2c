@@ -140,9 +140,8 @@ class MyFrame(wx.Frame):
 	def checkInterface(self):
 		cheking = Check(self.conf,self.currentLanguage )
 		result = cheking.check()
-		if result['red']:
-			self.ShowStatusBarRED(result['red'])
-		else: self.ShowStatusBarBLACK(' ')
+		if result['red']: self.ShowStatusBarRED(result['red'])
+		elif result['black']: self.ShowStatusBarBLACK(result['black'])
 
 	def pageI2c(self):
 		self.listSensors = wx.ListCtrl(self.i2c, -1, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES, size=(-1,200))

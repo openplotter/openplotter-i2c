@@ -61,8 +61,8 @@ class Check():
 				data = self.conf.get('I2C', 'sensors')
 				try: i2c_sensors = eval(data)
 				except: i2c_sensors = ''
-				if i2c_sensors:
-					red = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
-		
+				if i2c_sensors: red = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
+				else: black = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
+
 		return {'green': green,'black': black,'red': red}
 

@@ -48,19 +48,27 @@ class MyFrame(wx.Frame):
 		self.toolbar1.AddSeparator()
 		toolAddresses = self.toolbar1.AddTool(103, _('Detect I2C Addresses'), wx.Bitmap(self.currentdir+"/data/check.png"))
 		self.Bind(wx.EVT_TOOL, self.OnToolAddresses, toolAddresses)
-
+		self.toolbar1.AddSeparator()
+		toolApply = self.toolbar1.AddTool(104, _('Apply Changes'), wx.Bitmap(self.currentdir+"/data/apply.png"))
+		self.Bind(wx.EVT_TOOL, self.OnToolApply, toolApply)
+		toolCancel = self.toolbar1.AddTool(105, _('Cancel Changes'), wx.Bitmap(self.currentdir+"/data/cancel.png"))
+		self.Bind(wx.EVT_TOOL, self.OnToolCancel, toolCancel)
 
 		self.notebook = wx.Notebook(self)
 		self.i2c = wx.Panel(self.notebook)
+		self.connections = wx.Panel(self.notebook)
 		self.output = wx.Panel(self.notebook)
 		self.notebook.AddPage(self.i2c, _('Sensors'))
+		self.notebook.AddPage(self.connections, _('Data output'))
 		self.notebook.AddPage(self.output, _('Output'))
 		self.il = wx.ImageList(24, 24)
 		img0 = self.il.Add(wx.Bitmap(self.currentdir+"/data/i2c.png", wx.BITMAP_TYPE_PNG))
-		img1 = self.il.Add(wx.Bitmap(self.currentdir+"/data/output.png", wx.BITMAP_TYPE_PNG))
+		img1 = self.il.Add(wx.Bitmap(self.currentdir+"/data/connections.png", wx.BITMAP_TYPE_PNG))
+		img2 = self.il.Add(wx.Bitmap(self.currentdir+"/data/output.png", wx.BITMAP_TYPE_PNG))
 		self.notebook.AssignImageList(self.il)
 		self.notebook.SetPageImage(0, img0)
 		self.notebook.SetPageImage(1, img1)
+		self.notebook.SetPageImage(2, img2)
 
 		vbox = wx.BoxSizer(wx.VERTICAL)
 		vbox.Add(self.toolbar1, 0, wx.EXPAND)
@@ -71,22 +79,23 @@ class MyFrame(wx.Frame):
 		font_statusBar = self.GetStatusBar().GetFont()
 		font_statusBar.SetWeight(wx.BOLD)
 		self.GetStatusBar().SetFont(font_statusBar)
-		self.Centre(True) 
-		self.Show(True)
 
 		self.pageI2c()
+		self.pageConnections()
 		self.pageOutput()
 		self.checkInterface()
+		
+		self.Centre() 
 
 	def ShowStatusBar(self, w_msg, colour):
 		self.GetStatusBar().SetForegroundColour(colour)
 		self.SetStatusText(w_msg)
 
 	def ShowStatusBarRED(self, w_msg):
-		self.ShowStatusBar(w_msg, wx.RED)
+		self.ShowStatusBar(w_msg, (130,0,0))
 
 	def ShowStatusBarGREEN(self, w_msg):
-		self.ShowStatusBar(w_msg, wx.GREEN)
+		self.ShowStatusBar(w_msg, (0,130,0))
 
 	def ShowStatusBarBLACK(self, w_msg):
 		self.ShowStatusBar(w_msg, wx.BLACK) 
@@ -119,12 +128,12 @@ class MyFrame(wx.Frame):
 				addresses = subprocess.check_output(['i2cdetect', '-y', '1']).decode('utf-8')
 			except: pass
 		self.logger.Clear()
-		self.notebook.ChangeSelection(1)
+		self.notebook.ChangeSelection(2)
 		if addresses:
 			self.logger.BeginTextColour((55, 55, 55))
 			self.logger.WriteText(addresses)
 		else:
-			self.logger.BeginTextColour((255, 0, 0))
+			self.logger.BeginTextColour((130, 0, 0))
 			self.logger.WriteText(_('Failed'))
 		self.checkInterface()
 
@@ -133,6 +142,7 @@ class MyFrame(wx.Frame):
 		result = cheking.check()
 		if result['red']:
 			self.ShowStatusBarRED(result['red'])
+		else: self.ShowStatusBarBLACK(' ')
 
 	def pageI2c(self):
 		self.listSensors = wx.ListCtrl(self.i2c, -1, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES, size=(-1,200))
@@ -160,9 +170,9 @@ class MyFrame(wx.Frame):
 		self.i2c.SetSizer(sizer)
 
 		self.readSensors()
-		self.onListSensorsDeselected()
 
 	def readSensors(self):
+		self.onListSensorsDeselected()
 		self.i2c_sensors_def = []
 		self.i2c_sensors_def.append(['BME280','0x76',[_('pressure'),_('temperature'),_('humidity')],['environment.outside.pressure','','environment.inside.humidity']])
 		self.i2c_sensors_def.append(['MS5607-02BA03','0x77',[_('pressure'),_('temperature')],['environment.outside.pressure','']])
@@ -175,8 +185,11 @@ class MyFrame(wx.Frame):
 			self.i2c_sensors = eval(data)
 		except:
 			self.i2c_sensors = []
+		self.printSensors()
 
+	def printSensors(self):
 		self.listSensors.DeleteAllItems()
+		self.ShowStatusBarBLACK(' ')
 		for i in self.i2c_sensors:
 			name = i[0]
 			for ii in self.i2c_sensors_def:
@@ -223,8 +236,7 @@ class MyFrame(wx.Frame):
 						break
 					c = c + 1
 				if exist == False: self.i2c_sensors.append(new_sensor)
-				self.conf.set('I2C', 'sensors', str(self.i2c_sensors))
-				self.readSensors()
+			self.printSensors()
 		dlg.Destroy()
 
 	def OnEditButton(self,e):
@@ -257,8 +269,7 @@ class MyFrame(wx.Frame):
 					self.i2c_sensors[c][2][int(index)][1] = float(rate)
 					self.i2c_sensors[c][2][int(index)][2] = float(offset)
 				c = c + 1
-			self.conf.set('I2C', 'sensors', str(self.i2c_sensors))
-			self.readSensors()
+			self.printSensors()
 		dlg.Destroy()
 
 	def OnRemoveButton(self,e):
@@ -272,9 +283,7 @@ class MyFrame(wx.Frame):
 				del self.i2c_sensors[c]
 				break
 			c = c + 1
-
-		self.conf.set('I2C', 'sensors', str(self.i2c_sensors))
-		self.readSensors()
+		self.printSensors()
 
 	def onListSensorsSelected(self,e):
 		i = e.GetIndex()
@@ -287,6 +296,73 @@ class MyFrame(wx.Frame):
 		self.toolbar2.EnableTool(201,True)
 		self.toolbar2.EnableTool(202,False)
 		self.toolbar2.EnableTool(203,False)
+
+	def pageConnections(self):
+		self.toolbar3 = wx.ToolBar(self.connections, style=wx.TB_TEXT)
+		portLabel = wx.StaticText(self.connections, label='UDP Port:  ')
+		self.port = wx.SpinCtrl(self.toolbar3, 301, min=4000, max=65536, initial=51000)
+		toolPort = self.toolbar3.AddControl(self.port)
+		self.toolbar3.AddSeparator()
+		skConnections = self.toolbar3.AddTool(302, _('SK Connection'), wx.Bitmap(self.currentdir+"/data/sk.png"))
+		self.Bind(wx.EVT_TOOL, self.OnSkConnections, skConnections)
+		skTo0183 = self.toolbar3.AddTool(303, 'SK → NMEA 0183', wx.Bitmap(self.currentdir+"/data/sk.png"))
+		self.Bind(wx.EVT_TOOL, self.OnSkTo0183, skTo0183)
+		skTo2000 = self.toolbar3.AddTool(304, 'SK → NMEA 2000', wx.Bitmap(self.currentdir+"/data/sk.png"))
+		self.Bind(wx.EVT_TOOL, self.OnSkTo2000, skTo2000)
+
+		hbox = wx.BoxSizer(wx.HORIZONTAL)
+		hbox.Add(portLabel, 0, wx.UP | wx.EXPAND, 22)
+		hbox.Add(self.toolbar3, 1, wx.EXPAND)
+
+		vbox = wx.BoxSizer(wx.VERTICAL)
+		vbox.Add(hbox, 0, wx.LEFT | wx.EXPAND, 10)
+		vbox.AddStretchSpacer(1)
+		self.connections.SetSizer(vbox)
+
+		self.readPageConnections()
+
+	def readPageConnections(self):
+		try:
+			self.port.SetValue(int(self.conf.get('I2C', 'port')))
+		except: self.port.SetValue(51000)
+
+		if self.platform.skPort: 
+			self.toolbar3.EnableTool(302,True)
+			self.toolbar3.EnableTool(303,True)
+			if self.platform.isSKpluginInstalled('signalk-to-nmea2000'):
+				self.toolbar3.EnableTool(304,True)
+			else: self.toolbar3.EnableTool(304,False)
+		else:
+			self.toolbar3.EnableTool(302,False)
+			self.toolbar3.EnableTool(303,False)
+			self.toolbar3.EnableTool(304,False)
+	
+	def OnSkTo0183(self,e):
+		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/plugins/sk-to-nmea0183'
+		webbrowser.open(url, new=2)
+
+	def OnSkTo2000(self,e):
+		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/plugins/sk-to-nmea2000'
+		webbrowser.open(url, new=2)
+
+	def OnSkConnections(self,e):
+		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/connections/-'
+		webbrowser.open(url, new=2)
+
+	def OnToolApply(self,e):
+		self.conf.set('I2C', 'sensors', str(self.i2c_sensors))
+		self.conf.set('I2C', 'port', str(self.port.GetValue()))
+		self.readSensors()
+		self.readPageConnections()
+		self.ShowStatusBarGREEN(_('Changes saved'))
+		subprocess.Popen([self.platform.admin, 'systemctl', 'restart', 'openplotter-i2c-read'])
+
+		
+	def OnToolCancel(self,e):
+		self.readSensors()
+		self.readPageConnections()
+		self.ShowStatusBarRED(_('Changes canceled'))
+		subprocess.Popen([self.platform.admin, 'systemctl', 'restart', 'openplotter-i2c-read'])
 
 
 ################################################################################
@@ -344,6 +420,7 @@ class addI2c(wx.Dialog):
 		self.panel = panel
 
 		self.detection()
+		self.Centre() 
 
 	def onSelectDetected(self, e):
 		selectedDetected = self.list_detected.GetFirstSelected()
@@ -433,6 +510,8 @@ class editI2c(wx.Dialog):
 
 		panel.SetSizer(vbox)
 		self.panel = panel
+
+		self.Centre() 
 
 	def onEditSkkey(self,e):
 		dlg = selectKey.SelectKey(self.SKkey.GetValue(),0)

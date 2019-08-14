@@ -31,6 +31,6 @@ setup (
 	'Operating System :: POSIX :: Linux',
 	'Programming Language :: Python :: 3'],
 	include_package_data=True,
-	entry_points={'console_scripts': ['openplotter-i2c=openplotterI2c.openplotterI2c:main','openplotter-i2c-read=openplotterI2c.openplotterI2cRead:main']},
+	entry_points={'console_scripts': ['openplotter-i2c=openplotterI2c.openplotterI2c:main','openplotter-i2c-read=openplotterI2c.openplotterI2cRead:main','i2cPostInstallation=openplotterI2c.i2cPostInstallation:main']},
 	data_files=[('share/applications', ['openplotterI2c/data/openplotter-i2c.desktop']),('share/pixmaps', ['openplotterI2c/data/openplotter-i2c.png']),],
 	)

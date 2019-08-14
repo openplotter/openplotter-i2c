@@ -38,7 +38,7 @@ class Check():
 		self.conf = conf
 		currentdir = os.path.dirname(__file__)
 		language.Language(currentdir,'openplotter-i2c',currentLanguage)
-		self.initialMessage = _('Checking I2C...')
+		self.initialMessage = _('Checking I2C sensors...')
 
 
 	def check(self):
@@ -48,16 +48,21 @@ class Check():
 
 		try:
 			subprocess.check_output(['i2cdetect', '-y', '0']).decode('utf-8')
-			black = _('I2C enabled')
 			red = _('Your Raspberry Pi is too old.')
 		except:
 			try:
-				#TODO add running checkimg
 				subprocess.check_output(['i2cdetect', '-y', '1']).decode('utf-8')
 				black = _('I2C enabled')
+				try:
+					subprocess.check_output(['systemctl', 'is-active', 'openplotter-i2c-read.service']).decode('utf-8')
+					green = _('running')
+				except: black += _(' | not running')
 			except:
-				red = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
+				data = self.conf.get('I2C', 'sensors')
+				try: i2c_sensors = eval(data)
+				except: i2c_sensors = ''
+				if i2c_sensors:
+					red = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
 		
-
 		return {'green': green,'black': black,'red': red}
 

@@ -22,11 +22,8 @@ class Ports:
 		self.conf = conf
 		currentdir = os.path.dirname(__file__)
 		language.Language(currentdir,'openplotter-i2c',currentLanguage)
-
 		self.usedPorts=[]
-		'''
 		try:
-			subprocess.check_output(['systemctl', 'is-active', 'vncserver-x11-serviced.service']).decode('utf-8')
-			self.usedPorts=[{'description':_('VNC Remote Desktop'), 'type':'TCP', 'address':'localhost', 'port':'5900', 'direction':'out'}]
+			subprocess.check_output(['systemctl', 'is-active', 'openplotter-i2c-read.service']).decode('utf-8')
+			self.usedPorts=[{'description':_('I2C Sensors'), 'type':'UDP', 'address':'localhost', 'port':self.conf.get('I2C', 'port'), 'direction':'out'}]
 		except:pass
-		'''

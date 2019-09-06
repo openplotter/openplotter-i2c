@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Openplotter. If not, see <http://www.gnu.org/licenses/>.
-import subprocess, os
+import os
 from openplotterSettings import language
 
 class Ports:
@@ -22,8 +22,14 @@ class Ports:
 		self.conf = conf
 		currentdir = os.path.dirname(__file__)
 		language.Language(currentdir,'openplotter-i2c',currentLanguage)
-		self.usedPorts=[]
+		self.connections = []
+		connectionId = 'conn1'
+		try: port = int(self.conf.get('I2C', connectionId))
+		except: port = 51000 #default port
+		self.connections.append({'id':connectionId, 'description':_('I2C Sensors'), 'data':[], 'type':'UDP', 'mode':'client', 'address':'localhost', 'port':port, 'editable':'1'})
+
+	def usedPorts(self):
 		try:
-			subprocess.check_output(['systemctl', 'is-active', 'openplotter-i2c-read.service']).decode('utf-8')
-			self.usedPorts=[{'description':_('I2C Sensors'), 'type':'UDP', 'address':'localhost', 'port':self.conf.get('I2C', 'port'), 'direction':'out'}]
-		except:pass
+			i2c_sensors = eval(self.conf.get('I2C', 'sensors'))
+		except: i2c_sensors = []
+		if i2c_sensors: return self.connections

@@ -56,7 +56,7 @@ def work_bme280(bme280,i2c_port):
 					Erg += '{"path": "'+humiditySK+'","value":'+str(humidityOffset+(humidity))+'},'
 					tick3 = tick0
 			if Erg:		
-				SignalK='{"updates":[{"$source":"OPsensors.I2C.'+name+'","values":['
+				SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
 				SignalK+=Erg[0:-1]+']}]}\n'		
 				sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', i2c_port))
 	except Exception as e: print ("BME280 reading failed: "+str(e))
@@ -102,7 +102,7 @@ def main():
 	active = False
 	try:
 		i2c_sensors=eval(conf2.get('I2C', 'sensors'))
-		i2c_port = int(conf2.get('I2C', 'port'))
+		i2c_port = int(conf2.get('I2C', 'conn1'))
 	except: i2c_sensors=[]
 
 	if i2c_sensors and i2c_port:

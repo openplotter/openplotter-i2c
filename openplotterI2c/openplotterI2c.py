@@ -38,7 +38,11 @@ class MyFrame(wx.Frame):
 		self.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		icon = wx.Icon(self.currentdir+"/data/openplotter-i2c.png", wx.BITMAP_TYPE_PNG)
 		self.SetIcon(icon)
-
+		self.CreateStatusBar()
+		font_statusBar = self.GetStatusBar().GetFont()
+		font_statusBar.SetWeight(wx.BOLD)
+		self.GetStatusBar().SetFont(font_statusBar)
+		
 		self.toolbar1 = wx.ToolBar(self, style=wx.TB_TEXT)
 		toolHelp = self.toolbar1.AddTool(101, _('Help'), wx.Bitmap(self.currentdir+"/data/help.png"))
 		self.Bind(wx.EVT_TOOL, self.OnToolHelp, toolHelp)
@@ -46,7 +50,7 @@ class MyFrame(wx.Frame):
 		toolSettings = self.toolbar1.AddTool(102, _('Settings'), wx.Bitmap(self.currentdir+"/data/settings.png"))
 		self.Bind(wx.EVT_TOOL, self.OnToolSettings, toolSettings)
 		self.toolbar1.AddSeparator()
-		toolAddresses = self.toolbar1.AddTool(103, _('Detect I2C Addresses'), wx.Bitmap(self.currentdir+"/data/check.png"))
+		toolAddresses = self.toolbar1.AddTool(103, _('I2C Addresses'), wx.Bitmap(self.currentdir+"/data/check.png"))
 		self.Bind(wx.EVT_TOOL, self.OnToolAddresses, toolAddresses)
 		self.toolbar1.AddSeparator()
 		toolApply = self.toolbar1.AddTool(104, _('Apply Changes'), wx.Bitmap(self.currentdir+"/data/apply.png"))
@@ -55,6 +59,7 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_TOOL, self.OnToolCancel, toolCancel)
 
 		self.notebook = wx.Notebook(self)
+		self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onTabChange)
 		self.i2c = wx.Panel(self.notebook)
 		self.connections = wx.Panel(self.notebook)
 		self.output = wx.Panel(self.notebook)
@@ -74,11 +79,6 @@ class MyFrame(wx.Frame):
 		vbox.Add(self.toolbar1, 0, wx.EXPAND)
 		vbox.Add(self.notebook, 1, wx.EXPAND)
 		self.SetSizer(vbox)
-
-		self.CreateStatusBar()
-		font_statusBar = self.GetStatusBar().GetFont()
-		font_statusBar.SetWeight(wx.BOLD)
-		self.GetStatusBar().SetFont(font_statusBar)
 
 		self.pageI2c()
 		self.pageConnections()
@@ -101,7 +101,10 @@ class MyFrame(wx.Frame):
 		self.ShowStatusBar(w_msg, wx.BLACK) 
 
 	def ShowStatusBarYELLOW(self, w_msg):
-		self.ShowStatusBar(w_msg,(255,140,0)) 
+		self.ShowStatusBar(w_msg,(255,140,0))
+
+	def onTabChange(self, event):
+		self.SetStatusText('')
 
 	def OnToolHelp(self, event): 
 		url = "/usr/share/openplotter-doc/i2c/i2c_app.html"
@@ -188,7 +191,6 @@ class MyFrame(wx.Frame):
 
 	def printSensors(self):
 		self.listSensors.DeleteAllItems()
-		self.ShowStatusBarBLACK(' ')
 		for i in self.i2c_sensors:
 			name = i[0]
 			for ii in self.i2c_sensors_def:
@@ -298,33 +300,45 @@ class MyFrame(wx.Frame):
 
 	def pageConnections(self):
 		self.toolbar3 = wx.ToolBar(self.connections, style=wx.TB_TEXT)
-		portLabel = wx.StaticText(self.connections, label='UDP Port:  ')
-		self.port = wx.SpinCtrl(self.toolbar3, 301, min=4000, max=65536, initial=51000)
-		toolPort = self.toolbar3.AddControl(self.port)
-		self.toolbar3.AddSeparator()
 		skConnections = self.toolbar3.AddTool(302, _('SK Connection'), wx.Bitmap(self.currentdir+"/data/sk.png"))
 		self.Bind(wx.EVT_TOOL, self.OnSkConnections, skConnections)
+		self.toolbar3.AddSeparator()
 		skTo0183 = self.toolbar3.AddTool(303, 'SK → NMEA 0183', wx.Bitmap(self.currentdir+"/data/sk.png"))
 		self.Bind(wx.EVT_TOOL, self.OnSkTo0183, skTo0183)
 		skTo2000 = self.toolbar3.AddTool(304, 'SK → NMEA 2000', wx.Bitmap(self.currentdir+"/data/sk.png"))
 		self.Bind(wx.EVT_TOOL, self.OnSkTo2000, skTo2000)
 
+		self.listConnections = wx.ListCtrl(self.connections, -1, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES, size=(-1,200))
+		self.listConnections.InsertColumn(0, _('Type'), width=80)
+		self.listConnections.InsertColumn(1, _('Mode'), width=80)
+		self.listConnections.InsertColumn(2, _('Data'), width=395)
+		self.listConnections.InsertColumn(3, _('Port'), width=80)
+		self.listConnections.InsertColumn(4, _('Editable'), width=80)
+		self.listConnections.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onlistConnectionsSelected)
+		self.listConnections.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onlistConnectionsDeselected)
+
+		self.toolbar4 = wx.ToolBar(self.connections, style=wx.TB_TEXT | wx.TB_VERTICAL)
+		self.editConnButton = self.toolbar4.AddTool(402, _('Edit'), wx.Bitmap(self.currentdir+"/data/edit.png"))
+		self.Bind(wx.EVT_TOOL, self.OnEditConnButton, self.editConnButton)
+
 		hbox = wx.BoxSizer(wx.HORIZONTAL)
-		hbox.Add(portLabel, 0, wx.UP | wx.EXPAND, 22)
-		hbox.Add(self.toolbar3, 1, wx.EXPAND)
+		hbox.Add(self.listConnections, 1, wx.EXPAND, 0)
+		hbox.Add(self.toolbar4, 0)
 
 		vbox = wx.BoxSizer(wx.VERTICAL)
-		vbox.Add(hbox, 0, wx.LEFT | wx.EXPAND, 10)
+		vbox.Add(self.toolbar3, 0, wx.LEFT | wx.EXPAND, 0)
+		vbox.Add(hbox, 0, wx.LEFT | wx.EXPAND, 0)
 		vbox.AddStretchSpacer(1)
 		self.connections.SetSizer(vbox)
+		self.readConnections()
+		self.printConnections()
 
-		self.readPageConnections()
+	def readConnections(self):
+		from .ports import Ports
+		self.ports = Ports(self.conf, self.currentLanguage)
+		print ()
 
-	def readPageConnections(self):
-		try:
-			self.port.SetValue(int(self.conf.get('I2C', 'port')))
-		except: self.port.SetValue(51000)
-
+	def printConnections(self):
 		if self.platform.skPort: 
 			self.toolbar3.EnableTool(302,True)
 			self.toolbar3.EnableTool(303,True)
@@ -335,7 +349,28 @@ class MyFrame(wx.Frame):
 			self.toolbar3.EnableTool(302,False)
 			self.toolbar3.EnableTool(303,False)
 			self.toolbar3.EnableTool(304,False)
+		self.toolbar4.EnableTool(402,False)
+
+		self.listConnections.DeleteAllItems()
+		try: enabled = eval(self.conf.get('I2C', 'sensors'))
+		except: enabled = []
+		for i in self.ports.connections:
+			if i['editable'] == '1': editable = _('yes')
+			else: editable = _('no')
+			data = ", ".join(i['data'])
+			for ii in self.i2c_sensors:
+				for iii in ii[2]:
+					skKey = iii[0]
+					if skKey: 
+						if data: data += ', '+skKey
+						else: data = skKey
+			self.listConnections.Append([i['type'], i['mode'], data, str(i['port']), editable])
+			if enabled: self.listConnections.SetItemBackgroundColour(self.listConnections.GetItemCount()-1,(255,215,0))
 	
+	def OnSkConnections(self,e):
+		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/connections/-'
+		webbrowser.open(url, new=2)
+
 	def OnSkTo0183(self,e):
 		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/plugins/sk-to-nmea0183'
 		webbrowser.open(url, new=2)
@@ -344,24 +379,48 @@ class MyFrame(wx.Frame):
 		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/plugins/sk-to-nmea2000'
 		webbrowser.open(url, new=2)
 
-	def OnSkConnections(self,e):
-		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/connections/-'
-		webbrowser.open(url, new=2)
+	def OnEditConnButton(self,e):
+		selected = self.listConnections.GetFirstSelected()
+		if selected == -1: return
+		dlg = editPort(self.ports.connections[selected]['port'])
+		res = dlg.ShowModal()
+		if res == wx.ID_OK:
+			self.ports.connections[selected]['port'] = dlg.port.GetValue()
+			self.printConnections()
+		dlg.Destroy()
+
+	def onlistConnectionsSelected(self,e):
+		i = e.GetIndex()
+		valid = e and i >= 0
+		if not valid: return
+		if self.ports.connections[i]['editable'] == '1': self.toolbar4.EnableTool(402,True)
+		else: self.toolbar4.EnableTool(402,False)
+
+	def onlistConnectionsDeselected(self,e=0):
+		self.toolbar4.EnableTool(402,False)
 
 	def OnToolApply(self,e):
 		self.conf.set('I2C', 'sensors', str(self.i2c_sensors))
-		self.conf.set('I2C', 'port', str(self.port.GetValue()))
+		try:
+			i2c_sensors = eval(self.conf.get('I2C', 'sensors'))
+		except: i2c_sensors = []
+		if i2c_sensors:
+			subprocess.Popen([self.platform.admin, 'python3', self.currentdir+'/service.py', 'enable'])
+			self.ShowStatusBarGREEN(_('Sending data enabled'))
+		else:
+			subprocess.Popen([self.platform.admin, 'python3', self.currentdir+'/service.py', 'disable'])
+			self.ShowStatusBarYELLOW(_('Sending data disabled'))
+		for i in self.ports.connections:
+			self.conf.set('I2C', i['id'], str(i['port']))
 		self.readSensors()
-		self.readPageConnections()
-		self.ShowStatusBarGREEN(_('Changes saved'))
-		subprocess.Popen([self.platform.admin, 'systemctl', 'restart', 'openplotter-i2c-read'])
-
+		self.readConnections()
+		self.printConnections()
 		
 	def OnToolCancel(self,e):
-		self.readSensors()
-		self.readPageConnections()
 		self.ShowStatusBarRED(_('Changes canceled'))
-		subprocess.Popen([self.platform.admin, 'systemctl', 'restart', 'openplotter-i2c-read'])
+		self.readSensors()
+		self.readConnections()
+		self.printConnections()
 
 
 ################################################################################
@@ -519,6 +578,29 @@ class editI2c(wx.Dialog):
 			key = dlg.selected_key.replace(':','.')
 			self.SKkey.SetValue(key)
 		dlg.Destroy()
+
+################################################################################
+
+class editPort(wx.Dialog):
+	def __init__(self, port):
+		wx.Dialog.__init__(self, None, title=_('Port'), size=(200,150))
+		panel = wx.Panel(self)
+		self.port = wx.SpinCtrl(panel, 101, min=4000, max=65536, initial=50000)
+		self.port.SetValue(int(port))
+
+		cancelBtn = wx.Button(panel, wx.ID_CANCEL)
+		okBtn = wx.Button(panel, wx.ID_OK)
+
+		hbox = wx.BoxSizer(wx.HORIZONTAL)
+		hbox.Add(cancelBtn, 1, wx.ALL | wx.EXPAND, 10)
+		hbox.Add(okBtn, 1, wx.ALL | wx.EXPAND, 10)
+
+		vbox = wx.BoxSizer(wx.VERTICAL)
+		vbox.Add(self.port, 1, wx.ALL | wx.EXPAND, 10)
+		vbox.Add(hbox, 0, wx.EXPAND, 0)
+
+		panel.SetSizer(vbox)
+		self.Centre() 
 
 ################################################################################
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # This file is part of Openplotter.
-# Copyright (C) 2015 by sailoog <https://github.com/sailoog/openplotter>
+# Copyright (C) 2015 by Sailoog <https://github.com/openplotter/openplotter-i2c>
 #
 # Openplotter is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,15 +24,14 @@ def main():
 	currentLanguage = conf2.get('GENERAL', 'lang')
 	language.Language(currentdir,'openplotter-i2c',currentLanguage)
 
-	print(_('Adding openplotter-read-i2c service...'))
+	print(_('Removing openplotter-i2c-read service...'))
 	try:
-		fo = open('/etc/systemd/system/openplotter-i2c-read.service', "w")
-		fo.write( '[Service]\nExecStart=openplotter-i2c-read\nStandardOutput=syslog\nStandardError=syslog\nUser='+conf2.user+'\n[Install]\nWantedBy=multi-user.target')
-		fo.close()
+		subprocess.call(['systemctl', 'disable', 'openplotter-i2c-read'])
+		subprocess.call(['systemctl', 'stop', 'openplotter-i2c-read'])
+		subprocess.call(['rm', '-f', '/etc/systemd/system/openplotter-i2c-read.service'])
 		subprocess.call(['systemctl', 'daemon-reload'])
-		subprocess.call(['systemctl', 'enable', 'openplotter-i2c-read.service'])
-		print(_('DONE!'))
-	except: print(_('FAILED!'))
+		print(_('DONE'))
+	except Exception as e: print(_('FAILED: ')+str(e))
 
 
 if __name__ == '__main__':

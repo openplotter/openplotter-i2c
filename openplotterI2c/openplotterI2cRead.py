@@ -102,7 +102,7 @@ def main():
 	active = False
 	try:
 		i2c_sensors=eval(conf2.get('I2C', 'sensors'))
-		i2c_port = int(conf2.get('I2C', 'conn1'))
+		i2c_port = int(conf2.get('I2C', 'i2cConn1'))
 	except: i2c_sensors=[]
 
 	if i2c_sensors and i2c_port:

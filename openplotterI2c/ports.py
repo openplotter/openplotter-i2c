@@ -23,7 +23,7 @@ class Ports:
 		currentdir = os.path.dirname(__file__)
 		language.Language(currentdir,'openplotter-i2c',currentLanguage)
 		self.connections = []
-		connectionId = 'conn1'
+		connectionId = 'i2cConn1'
 		try: port = int(self.conf.get('I2C', connectionId))
 		except: port = 51000 #default port
 		self.connections.append({'id':connectionId, 'description':_('I2C Sensors'), 'data':[], 'type':'UDP', 'mode':'client', 'address':'localhost', 'port':port, 'editable':'1'})

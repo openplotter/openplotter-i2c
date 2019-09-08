@@ -311,9 +311,10 @@ class MyFrame(wx.Frame):
 		self.listConnections = wx.ListCtrl(self.connections, -1, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES, size=(-1,200))
 		self.listConnections.InsertColumn(0, _('Type'), width=80)
 		self.listConnections.InsertColumn(1, _('Mode'), width=80)
-		self.listConnections.InsertColumn(2, _('Data'), width=395)
-		self.listConnections.InsertColumn(3, _('Port'), width=80)
-		self.listConnections.InsertColumn(4, _('Editable'), width=80)
+		self.listConnections.InsertColumn(2, _('Data'), width=315)
+		self.listConnections.InsertColumn(3, _('Direction'), width=80)
+		self.listConnections.InsertColumn(4, _('Port'), width=80)
+		self.listConnections.InsertColumn(5, _('Editable'), width=80)
 		self.listConnections.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onlistConnectionsSelected)
 		self.listConnections.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onlistConnectionsDeselected)
 
@@ -357,14 +358,19 @@ class MyFrame(wx.Frame):
 		for i in self.ports.connections:
 			if i['editable'] == '1': editable = _('yes')
 			else: editable = _('no')
-			data = ", ".join(i['data'])
+			direction = ''
+			if i['direction'] == '1': direction = _('input')
+			elif i['direction'] == '2': direction = _('output')
+			elif i['direction'] == '3': direction = _('both')
+			keys = ''
 			for ii in self.i2c_sensors:
 				for iii in ii[2]:
 					skKey = iii[0]
 					if skKey: 
-						if data: data += ', '+skKey
-						else: data = skKey
-			self.listConnections.Append([i['type'], i['mode'], data, str(i['port']), editable])
+						if keys: keys += ', '+skKey
+						else: keys = skKey
+			data = i['data']+keys
+			self.listConnections.Append([i['type'], i['mode'], data, direction, str(i['port']), editable])
 			if enabled: self.listConnections.SetItemBackgroundColour(self.listConnections.GetItemCount()-1,(255,215,0))
 	
 	def OnSkConnections(self,e):

@@ -12,7 +12,7 @@ Install [openplotter-settings](https://github.com/openplotter/openplotter-settin
 
 Install dependencies:
 
-`sudo apt install openplotter-settings python3-wxgtk4.0 i2c-tools`
+`sudo apt install openplotter-settings i2c-tools`
 
 Clone the repository:
 

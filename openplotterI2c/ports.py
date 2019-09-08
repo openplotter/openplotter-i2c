@@ -26,7 +26,7 @@ class Ports:
 		connectionId = 'i2cConn1'
 		try: port = int(self.conf.get('I2C', connectionId))
 		except: port = 51000 #default port
-		self.connections.append({'id':connectionId, 'description':_('I2C Sensors'), 'data':[], 'type':'UDP', 'mode':'client', 'address':'localhost', 'port':port, 'editable':'1'})
+		self.connections.append({'id':connectionId, 'description':_('I2C Sensors'), 'data':_('Signal K keys: '), 'direction':'2', 'type':'UDP', 'mode':'client', 'address':'localhost', 'port':port, 'editable':'1'})
 
 	def usedPorts(self):
 		try:

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Openplotter. If not, see <http://www.gnu.org/licenses/>.
 
-import wx, os, webbrowser, subprocess, time, smbus
+import wx, os, webbrowser, subprocess, time, smbus, sys, ujson
 import wx.richtext as rt
 
 from openplotterSettings import conf
@@ -64,8 +64,8 @@ class MyFrame(wx.Frame):
 		self.connections = wx.Panel(self.notebook)
 		self.output = wx.Panel(self.notebook)
 		self.notebook.AddPage(self.i2c, _('Sensors'))
-		self.notebook.AddPage(self.connections, _('Data output'))
-		self.notebook.AddPage(self.output, _('Output'))
+		self.notebook.AddPage(self.connections, _('Connections'))
+		self.notebook.AddPage(self.output, '')
 		self.il = wx.ImageList(24, 24)
 		img0 = self.il.Add(wx.Bitmap(self.currentdir+"/data/i2c.png", wx.BITMAP_TYPE_PNG))
 		img1 = self.il.Add(wx.Bitmap(self.currentdir+"/data/connections.png", wx.BITMAP_TYPE_PNG))
@@ -85,7 +85,10 @@ class MyFrame(wx.Frame):
 		self.pageOutput()
 		self.checkInterface()
 		
-		self.Centre() 
+		maxi = self.conf.get('GENERAL', 'maximize')
+		if maxi == '1': self.Maximize()
+		
+		self.Centre()
 
 	def ShowStatusBar(self, w_msg, colour):
 		self.GetStatusBar().SetForegroundColour(colour)
@@ -104,13 +107,15 @@ class MyFrame(wx.Frame):
 		self.ShowStatusBar(w_msg,(255,140,0))
 
 	def onTabChange(self, event):
-		self.SetStatusText('')
+		try:
+			self.SetStatusText('')
+		except:pass
 
 	def OnToolHelp(self, event): 
 		url = "/usr/share/openplotter-doc/i2c/i2c_app.html"
 		webbrowser.open(url, new=2)
 
-	def OnToolSettings(self, event): 
+	def OnToolSettings(self, event=0): 
 		subprocess.call(['pkill', '-f', 'openplotter-settings'])
 		subprocess.Popen('openplotter-settings')
 
@@ -125,10 +130,10 @@ class MyFrame(wx.Frame):
 	def OnToolAddresses(self,e):
 		addresses = ''
 		try:
-			addresses = subprocess.check_output(['i2cdetect', '-y', '0']).decode('utf-8')
+			addresses = subprocess.check_output(['i2cdetect', '-y', '0']).decode(sys.stdin.encoding)
 		except:
 			try:
-				addresses = subprocess.check_output(['i2cdetect', '-y', '1']).decode('utf-8')
+				addresses = subprocess.check_output(['i2cdetect', '-y', '1']).decode(sys.stdin.encoding)
 			except: pass
 		self.logger.Clear()
 		self.notebook.ChangeSelection(2)
@@ -206,7 +211,11 @@ class MyFrame(wx.Frame):
 				c = c + 1
 
 	def OnAddButton(self,e):
-		dlg = addI2c(self.i2c_sensors_def)
+		try:
+			dlg = addI2c(self.i2c_sensors_def)
+		except:
+			self.checkInterface()
+			return
 		res = dlg.ShowModal()
 		if res == wx.ID_OK:
 			name = str(dlg.sensor_select.GetValue())
@@ -300,7 +309,7 @@ class MyFrame(wx.Frame):
 
 	def pageConnections(self):
 		self.toolbar3 = wx.ToolBar(self.connections, style=wx.TB_TEXT)
-		skConnections = self.toolbar3.AddTool(302, _('SK Connection'), wx.Bitmap(self.currentdir+"/data/sk.png"))
+		skConnections = self.toolbar3.AddTool(302, _('Add SK Connection'), wx.Bitmap(self.currentdir+"/data/sk.png"))
 		self.Bind(wx.EVT_TOOL, self.OnSkConnections, skConnections)
 		self.toolbar3.AddSeparator()
 		skTo0183 = self.toolbar3.AddTool(303, 'SK → NMEA 0183', wx.Bitmap(self.currentdir+"/data/sk.png"))
@@ -309,17 +318,19 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_TOOL, self.OnSkTo2000, skTo2000)
 
 		self.listConnections = wx.ListCtrl(self.connections, -1, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES, size=(-1,200))
-		self.listConnections.InsertColumn(0, _('Type'), width=80)
-		self.listConnections.InsertColumn(1, _('Mode'), width=80)
-		self.listConnections.InsertColumn(2, _('Data'), width=315)
-		self.listConnections.InsertColumn(3, _('Direction'), width=80)
-		self.listConnections.InsertColumn(4, _('Port'), width=80)
-		self.listConnections.InsertColumn(5, _('Editable'), width=80)
+		self.listConnections.InsertColumn(0, _('Type'), width=100)
+		self.listConnections.InsertColumn(1, _('Port'), width=100)
+		self.listConnections.InsertColumn(2, _('Editable'), width=100)
+		self.listConnections.InsertColumn(3, _('SK connection ID'), width=300)
 		self.listConnections.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onlistConnectionsSelected)
 		self.listConnections.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onlistConnectionsDeselected)
 
 		self.toolbar4 = wx.ToolBar(self.connections, style=wx.TB_TEXT | wx.TB_VERTICAL)
-		self.editConnButton = self.toolbar4.AddTool(402, _('Edit'), wx.Bitmap(self.currentdir+"/data/edit.png"))
+		self.editSKButton = self.toolbar4.AddTool(401, _('Edit SK connection'), wx.Bitmap(self.currentdir+"/data/sk.png"))
+		self.Bind(wx.EVT_TOOL, self.OnEditSKButton, self.editSKButton)
+		self.refreshButton = self.toolbar4.AddTool(403, _('Refresh'), wx.Bitmap(self.currentdir+"/data/refresh.png"))
+		self.Bind(wx.EVT_TOOL, self.OnRefreshButton, self.refreshButton)
+		self.editConnButton = self.toolbar4.AddTool(402, _('Edit Port'), wx.Bitmap(self.currentdir+"/data/edit.png"))
 		self.Bind(wx.EVT_TOOL, self.OnEditConnButton, self.editConnButton)
 
 		hbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -334,56 +345,83 @@ class MyFrame(wx.Frame):
 		self.readConnections()
 		self.printConnections()
 
+	def OnEditSKButton(self, e):
+		selected = self.listConnections.GetFirstSelected()
+		if selected == -1: return
+		skId = self.listConnections.GetItemText(selected, 3)
+		if self.platform.skPort: 
+			url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/connections/'+skId
+			webbrowser.open(url, new=2)
+		else: 
+			self.ShowStatusBarRED(_('Please install "Signal K Installer" OpenPlotter app'))
+			self.OnToolSettings()
+
+	def OnRefreshButton(self, e):
+		self.printConnections()
+
 	def readConnections(self):
 		from .ports import Ports
 		self.ports = Ports(self.conf, self.currentLanguage)
-		print ()
 
 	def printConnections(self):
-		if self.platform.skPort: 
-			self.toolbar3.EnableTool(302,True)
-			self.toolbar3.EnableTool(303,True)
-			if self.platform.isSKpluginInstalled('signalk-to-nmea2000'):
-				self.toolbar3.EnableTool(304,True)
-			else: self.toolbar3.EnableTool(304,False)
-		else:
-			self.toolbar3.EnableTool(302,False)
-			self.toolbar3.EnableTool(303,False)
-			self.toolbar3.EnableTool(304,False)
 		self.toolbar4.EnableTool(402,False)
+		self.toolbar4.EnableTool(401,False)
+
+		self.sklist = []
+		try:
+			setting_file = self.platform.skDir+'/settings.json'
+			data = ''
+			with open(setting_file) as data_file:
+				data = ujson.load(data_file)
+			if 'pipedProviders' in data:
+				for i in data['pipedProviders']:
+					if i['pipeElements'][0]['options']['type']=='SignalK':
+						if i['pipeElements'][0]['options']['subOptions']['type']=='udp':
+							self.sklist.append([i['id'],i['enabled'],i['pipeElements'][0]['options']['subOptions']['port']])
+		except:pass
 
 		self.listConnections.DeleteAllItems()
-		try: enabled = eval(self.conf.get('I2C', 'sensors'))
-		except: enabled = []
 		for i in self.ports.connections:
 			if i['editable'] == '1': editable = _('yes')
 			else: editable = _('no')
-			direction = ''
-			if i['direction'] == '1': direction = _('input')
-			elif i['direction'] == '2': direction = _('output')
-			elif i['direction'] == '3': direction = _('both')
-			keys = ''
-			for ii in self.i2c_sensors:
-				for iii in ii[2]:
-					skKey = iii[0]
-					if skKey: 
-						if keys: keys += ', '+skKey
-						else: keys = skKey
-			data = i['data']+keys
-			self.listConnections.Append([i['type'], i['mode'], data, direction, str(i['port']), editable])
+
+			skId = _('!Add Signal K connection')
+			enabled = False
+			for ii in self.sklist:
+				if ii[2] == str(i['port']):
+					skId = ii[0]
+					if ii[1]: enabled = True
+
+			self.listConnections.Append([i['type'], str(i['port']), editable, skId])
 			if enabled: self.listConnections.SetItemBackgroundColour(self.listConnections.GetItemCount()-1,(255,215,0))
 	
 	def OnSkConnections(self,e):
-		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/connections/-'
-		webbrowser.open(url, new=2)
+		if self.platform.skPort: 
+			url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/connections/-'
+			webbrowser.open(url, new=2)
+		else: 
+			self.ShowStatusBarRED(_('Please install "Signal K Installer" OpenPlotter app'))
+			self.OnToolSettings()
 
 	def OnSkTo0183(self,e):
-		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/plugins/sk-to-nmea0183'
-		webbrowser.open(url, new=2)
+		if self.platform.skPort: 
+			url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/plugins/sk-to-nmea0183'
+			webbrowser.open(url, new=2)
+		else: 
+			self.ShowStatusBarRED(_('Please install "Signal K Installer" OpenPlotter app'))
+			self.OnToolSettings()
 
 	def OnSkTo2000(self,e):
-		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/plugins/sk-to-nmea2000'
-		webbrowser.open(url, new=2)
+		if self.platform.skPort: 
+			if self.platform.isSKpluginInstalled('signalk-to-nmea2000'):
+				url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/plugins/sk-to-nmea2000'
+			else: 
+				self.ShowStatusBarRED(_('Please install "signalk-to-nmea2000" Signal K app'))
+				url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/appstore/apps'
+			webbrowser.open(url, new=2)
+		else: 
+			self.ShowStatusBarRED(_('Please install "Signal K Installer" OpenPlotter app'))
+			self.OnToolSettings()
 
 	def OnEditConnButton(self,e):
 		selected = self.listConnections.GetFirstSelected()
@@ -401,9 +439,11 @@ class MyFrame(wx.Frame):
 		if not valid: return
 		if self.ports.connections[i]['editable'] == '1': self.toolbar4.EnableTool(402,True)
 		else: self.toolbar4.EnableTool(402,False)
+		self.toolbar4.EnableTool(401,True)
 
 	def onlistConnectionsDeselected(self,e=0):
 		self.toolbar4.EnableTool(402,False)
+		self.toolbar4.EnableTool(401,False)
 
 	def OnToolApply(self,e):
 		self.conf.set('I2C', 'sensors', str(self.i2c_sensors))

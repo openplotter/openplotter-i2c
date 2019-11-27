@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Openplotter. If not, see <http://www.gnu.org/licenses/>.
 
-import time, subprocess, os
+import time, subprocess, os, sys
 from openplotterSettings import language
 
 #TODO set network startup
@@ -47,14 +47,14 @@ class Check():
 		red = ''
 
 		try:
-			subprocess.check_output(['i2cdetect', '-y', '0']).decode('utf-8')
+			subprocess.check_output(['i2cdetect', '-y', '0']).decode(sys.stdin.encoding)
 			red = _('Your Raspberry Pi is too old.')
 		except:
 			try:
-				subprocess.check_output(['i2cdetect', '-y', '1']).decode('utf-8')
+				subprocess.check_output(['i2cdetect', '-y', '1']).decode(sys.stdin.encoding)
 				black = _('I2C enabled')
 				try:
-					subprocess.check_output(['systemctl', 'is-active', 'openplotter-i2c-read.service']).decode('utf-8')
+					subprocess.check_output(['systemctl', 'is-active', 'openplotter-i2c-read.service']).decode(sys.stdin.encoding)
 					green = _('running')
 				except: black += _(' | not running')
 			except:

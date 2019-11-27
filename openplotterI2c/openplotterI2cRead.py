@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # This file is part of Openplotter.
 # Copyright (C) 2019 by sailoog <https://github.com/sailoog/openplotter>

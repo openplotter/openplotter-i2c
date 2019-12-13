@@ -23,3 +23,14 @@ if sys.argv[1]=='enable':
 if sys.argv[1]=='disable':
 	subprocess.call(['systemctl', 'disable', 'openplotter-i2c-read'])
 	subprocess.call(['systemctl', 'stop', 'openplotter-i2c-read'])
+if sys.argv[1]=='start':
+	subprocess.call(['systemctl', 'start', 'signalk.socket'])
+	subprocess.call(['systemctl', 'start', 'signalk.service'])
+if sys.argv[1]=='stop':
+	subprocess.call(['systemctl', 'stop', 'signalk.service'])
+	subprocess.call(['systemctl', 'stop', 'signalk.socket'])
+if sys.argv[1]=='restart':
+	subprocess.call(['systemctl', 'stop', 'signalk.service'])
+	subprocess.call(['systemctl', 'stop', 'signalk.socket'])
+	subprocess.call(['systemctl', 'start', 'signalk.socket'])
+	subprocess.call(['systemctl', 'start', 'signalk.service'])

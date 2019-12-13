@@ -23,6 +23,7 @@ from openplotterSettings import language
 from openplotterSettings import ports
 from openplotterSettings import platform
 from openplotterSettings import selectKey
+from openplotterSettings import selectConnections
 from .startup import Check
 
 class MyFrame(wx.Frame):
@@ -53,10 +54,13 @@ class MyFrame(wx.Frame):
 		toolAddresses = self.toolbar1.AddTool(103, _('I2C Addresses'), wx.Bitmap(self.currentdir+"/data/check.png"))
 		self.Bind(wx.EVT_TOOL, self.OnToolAddresses, toolAddresses)
 		self.toolbar1.AddSeparator()
-		toolApply = self.toolbar1.AddTool(104, _('Apply Changes'), wx.Bitmap(self.currentdir+"/data/apply.png"))
-		self.Bind(wx.EVT_TOOL, self.OnToolApply, toolApply)
-		toolCancel = self.toolbar1.AddTool(105, _('Cancel Changes'), wx.Bitmap(self.currentdir+"/data/cancel.png"))
-		self.Bind(wx.EVT_TOOL, self.OnToolCancel, toolCancel)
+		self.refreshButton = self.toolbar1.AddTool(104, _('Refresh'), wx.Bitmap(self.currentdir+"/data/refresh.png"))
+		self.Bind(wx.EVT_TOOL, self.OnRefreshButton, self.refreshButton)
+		self.toolbar1.AddSeparator()
+		skTo0183 = self.toolbar1.AddTool(105, 'SK → NMEA 0183', wx.Bitmap(self.currentdir+"/data/sk.png"))
+		self.Bind(wx.EVT_TOOL, self.OnSkTo0183, skTo0183)
+		skTo2000 = self.toolbar1.AddTool(106, 'SK → NMEA 2000', wx.Bitmap(self.currentdir+"/data/sk.png"))
+		self.Bind(wx.EVT_TOOL, self.OnSkTo2000, skTo2000)
 
 		self.notebook = wx.Notebook(self)
 		self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onTabChange)
@@ -84,6 +88,7 @@ class MyFrame(wx.Frame):
 		self.pageConnections()
 		self.pageOutput()
 		self.checkInterface()
+		self.readSensors()
 		
 		maxi = self.conf.get('GENERAL', 'maximize')
 		if maxi == '1': self.Maximize()
@@ -119,10 +124,12 @@ class MyFrame(wx.Frame):
 		subprocess.call(['pkill', '-f', 'openplotter-settings'])
 		subprocess.Popen('openplotter-settings')
 
+	def OnRefreshButton(self, e):
+		self.readSensors()
+
 	def pageOutput(self):
 		self.logger = rt.RichTextCtrl(self.output, style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_DONTWRAP|wx.LC_SORT_ASCENDING)
 		self.logger.SetMargins((10,10))
-
 		sizer = wx.BoxSizer(wx.VERTICAL)
 		sizer.Add(self.logger, 1, wx.EXPAND, 0)
 		self.output.SetSizer(sizer)
@@ -154,8 +161,8 @@ class MyFrame(wx.Frame):
 	def pageI2c(self):
 		self.listSensors = wx.ListCtrl(self.i2c, -1, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES, size=(-1,200))
 		self.listSensors.InsertColumn(0, ' ', width=16)
-		self.listSensors.InsertColumn(1, _('Name'), width=135)
-		self.listSensors.InsertColumn(2, _('Address'), width=100)
+		self.listSensors.InsertColumn(1, _('Name'), width=120)
+		self.listSensors.InsertColumn(2, _('Address'), width=80)
 		self.listSensors.InsertColumn(3, _('Magnitude'), width=120)
 		self.listSensors.InsertColumn(4, _('Signal K key'), width=220)
 		self.listSensors.InsertColumn(5, _('Rate'), width=50)
@@ -164,11 +171,11 @@ class MyFrame(wx.Frame):
 		self.listSensors.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onListSensorsDeselected)
 
 		self.toolbar2 = wx.ToolBar(self.i2c, style=wx.TB_TEXT | wx.TB_VERTICAL)
-		self.addButton = self.toolbar2.AddTool(201, _('Add'), wx.Bitmap(self.currentdir+"/data/add.png"))
+		self.addButton = self.toolbar2.AddTool(201, _('Add'), wx.Bitmap(self.currentdir+"/data/i2c.png"))
 		self.Bind(wx.EVT_TOOL, self.OnAddButton, self.addButton)
 		self.editButton = self.toolbar2.AddTool(202, _('Edit'), wx.Bitmap(self.currentdir+"/data/edit.png"))
 		self.Bind(wx.EVT_TOOL, self.OnEditButton, self.editButton)
-		self.removeButton = self.toolbar2.AddTool(203, _('Remove'), wx.Bitmap(self.currentdir+"/data/remove.png"))
+		self.removeButton = self.toolbar2.AddTool(203, _('Remove'), wx.Bitmap(self.currentdir+"/data/cancel.png"))
 		self.Bind(wx.EVT_TOOL, self.OnRemoveButton, self.removeButton)
 
 		sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -176,39 +183,57 @@ class MyFrame(wx.Frame):
 		sizer.Add(self.toolbar2, 0)
 		self.i2c.SetSizer(sizer)
 
-		self.readSensors()
-
 	def readSensors(self):
+		self.listSensors.DeleteAllItems()
+		self.listConnections.DeleteAllItems()
 		self.onListSensorsDeselected()
-		self.i2c_sensors_def = []
-		self.i2c_sensors_def.append(['BME280','0x76',[_('pressure'),_('temperature'),_('humidity')],['environment.outside.pressure','','environment.inside.humidity']])
-		self.i2c_sensors_def.append(['MS5607-02BA03','0x77',[_('pressure'),_('temperature')],['environment.outside.pressure','']])
-		#self.i2c_sensors_def.append(['Si7020-A20','0x40',[_('humidity'),_('temperature')],['environment.inside.humidity','']])
-		self.i2c_sensors = []
+		self.onlistConnectionsDeselected()
+
+		self.i2c_sensors_def = {}
+		self.i2c_sensors_def['BME280'] = {'address': '0x76', 'magnitudes': [_('pressure'),_('temperature'),_('humidity')], 'SKkeys': ['environment.outside.pressure','','environment.inside.humidity']}
+		self.i2c_sensors_def['MS5607-02BA03'] = {'address': '0x77', 'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure','']}
 		
 		data = self.conf.get('I2C', 'sensors')
-		magn_list = '0123456789'
-		try:
-			self.i2c_sensors = eval(data)
-		except:
-			self.i2c_sensors = []
-		self.printSensors()
+		try: self.i2c_sensors = eval(data)
+		except: self.i2c_sensors = {}
 
-	def printSensors(self):
-		self.listSensors.DeleteAllItems()
-		for i in self.i2c_sensors:
-			name = i[0]
-			for ii in self.i2c_sensors_def:
-				if name == ii[0]: 
-					magn_list = ii[2]
-					break
-			address = i[1]
+		for sensor in self.i2c_sensors:
+			name = sensor
+			address = self.i2c_sensors[sensor]['address']
+			port = self.i2c_sensors[sensor]['port']
 			c = 0
-			for iii in i[2]:
-				#print(str(c), name, address, magn_list[c], iii[0], str(iii[1]), str(iii[2]))
-				self.listSensors.Append([str(c), name, address, magn_list[c], iii[0], str(iii[1]), str(iii[2])])
-				if iii[0]: self.listSensors.SetItemBackgroundColour(self.listSensors.GetItemCount()-1,(255,215,0))
+			for index, magnitude in enumerate(self.i2c_sensors_def[sensor]['magnitudes']):
+				nameMagnitude = magnitude
+				SKkey = self.i2c_sensors[sensor]['data'][index]['SKkey']
+				rate = self.i2c_sensors[sensor]['data'][index]['rate']
+				offset = self.i2c_sensors[sensor]['data'][index]['offset']
+				self.listSensors.Append([str(c),name, address, nameMagnitude, SKkey, str(rate), str(offset)])
 				c = c + 1
+				if SKkey: self.listSensors.SetItemBackgroundColour(self.listSensors.GetItemCount()-1,(255,215,0))
+			self.listConnections.Append([name, str(port), ''])
+
+		sklist = []
+		if self.platform.skDir:
+			from openplotterSignalkInstaller import editSettings
+			skSettings = editSettings.EditSettings()
+			if 'pipedProviders' in skSettings.data:
+				for i in skSettings.data['pipedProviders']:
+					if i['pipeElements'][0]['options']['type']=='SignalK':
+						if i['pipeElements'][0]['options']['subOptions']['type']=='udp':
+							sklist.append([i['id'],i['enabled'],i['pipeElements'][0]['options']['subOptions']['port']])
+		for i in sklist:
+			exists = False
+			for ii in range(self.listConnections.GetItemCount()):
+				if i[2] == self.listConnections.GetItemText(ii, 1):
+					exists = True
+					self.listConnections.SetItem(ii, 2, i[0])
+			if not exists: self.listConnections.Append(['', i[2], i[0]])
+
+		for i in range(self.listConnections.GetItemCount()):
+			if self.listConnections.GetItemText(i, 0) and self.listConnections.GetItemText(i, 1) and self.listConnections.GetItemText(i, 2):
+				for ii in sklist:
+					if self.listConnections.GetItemText(i, 2) == ii[0] and ii[1]:
+						self.listConnections.SetItemBackgroundColour(i,(255,215,0))
 
 	def OnAddButton(self,e):
 		try:
@@ -228,25 +253,14 @@ class MyFrame(wx.Frame):
 				self.ShowStatusBarRED(_('Failed. You must provide an address.'))
 				dlg.Destroy()
 				return
-			new_sensor = []
-			for item in self.i2c_sensors_def:
-				if name == item[0]:
-					new_sensor.append(name)
-					new_sensor.append(address)
-					new_sensor.append([])   
-					for ii in item[3]:
-						new_sensor[2].append([ii, 1.0, 0.0])
-			if new_sensor:
-				exist = False
-				c = 0
-				for i in self.i2c_sensors:
-					if i[0] == new_sensor[0]: 
-						self.i2c_sensors[c] = new_sensor
-						exist = True
-						break
-					c = c + 1
-				if exist == False: self.i2c_sensors.append(new_sensor)
-			self.printSensors()
+			if name in self.i2c_sensors_def:
+				data = []
+				for SKkey in self.i2c_sensors_def[name]['SKkeys']:
+					data.append({'SKkey': SKkey, 'rate': 1.0, 'offset': 0.0})
+				new_sensor = {'address': address, 'port': 51000, 'data': data}
+				self.i2c_sensors[name] = new_sensor
+			self.OnApply()
+			self.readSensors()
 		dlg.Destroy()
 
 	def OnEditButton(self,e):
@@ -272,14 +286,10 @@ class MyFrame(wx.Frame):
 			rate = dlg.rate.GetValue()
 			offset = dlg.offset.GetValue()
 			if not offset: offset = 0.0
-			c = 0
-			for i in self.i2c_sensors:
-				if i[0] == name:
-					self.i2c_sensors[c][2][int(index)][0] = sk
-					self.i2c_sensors[c][2][int(index)][1] = float(rate)
-					self.i2c_sensors[c][2][int(index)][2] = float(offset)
-				c = c + 1
-			self.printSensors()
+			if not rate: rate = 1.0
+			self.i2c_sensors[name]['data'][int(index)] = {'SKkey': sk, 'rate': float(rate), 'offset': float(offset)}
+			self.OnApply()
+			self.readSensors()
 		dlg.Destroy()
 
 	def OnRemoveButton(self,e):
@@ -287,13 +297,21 @@ class MyFrame(wx.Frame):
 		if selected == -1: return
 		name = self.listSensors.GetItem(selected, 1)
 		name = name.GetText()
-		c = 0
-		for i in self.i2c_sensors:
-			if str(i[0]) == name: 
-				del self.i2c_sensors[c]
-				break
-			c = c + 1
-		self.printSensors()
+		del self.i2c_sensors[name]
+		self.OnApply()
+		self.readSensors()
+
+	def OnApply(self):
+		self.conf.set('I2C', 'sensors', str(self.i2c_sensors))
+		try:
+			i2c_sensors = eval(self.conf.get('I2C', 'sensors'))
+		except: i2c_sensors = []
+		if i2c_sensors:
+			subprocess.Popen([self.platform.admin, 'python3', self.currentdir+'/service.py', 'enable'])
+			self.ShowStatusBarGREEN(_('I2C service is enabled'))
+		else:
+			subprocess.Popen([self.platform.admin, 'python3', self.currentdir+'/service.py', 'disable'])
+			self.ShowStatusBarYELLOW(_('There is nothing to send. I2C service is disabled'))
 
 	def onListSensorsSelected(self,e):
 		i = e.GetIndex()
@@ -307,101 +325,108 @@ class MyFrame(wx.Frame):
 		self.toolbar2.EnableTool(202,False)
 		self.toolbar2.EnableTool(203,False)
 
-	def pageConnections(self):
-		self.toolbar3 = wx.ToolBar(self.connections, style=wx.TB_TEXT)
-		skConnections = self.toolbar3.AddTool(302, _('Add SK Connection'), wx.Bitmap(self.currentdir+"/data/sk.png"))
-		self.Bind(wx.EVT_TOOL, self.OnSkConnections, skConnections)
-		self.toolbar3.AddSeparator()
-		skTo0183 = self.toolbar3.AddTool(303, 'SK → NMEA 0183', wx.Bitmap(self.currentdir+"/data/sk.png"))
-		self.Bind(wx.EVT_TOOL, self.OnSkTo0183, skTo0183)
-		skTo2000 = self.toolbar3.AddTool(304, 'SK → NMEA 2000', wx.Bitmap(self.currentdir+"/data/sk.png"))
-		self.Bind(wx.EVT_TOOL, self.OnSkTo2000, skTo2000)
+	###########################################################################
 
+	def pageConnections(self):
 		self.listConnections = wx.ListCtrl(self.connections, -1, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES, size=(-1,200))
-		self.listConnections.InsertColumn(0, _('Type'), width=100)
+		self.listConnections.InsertColumn(0, _('Sensor'), width=220)
 		self.listConnections.InsertColumn(1, _('Port'), width=100)
-		self.listConnections.InsertColumn(2, _('Editable'), width=100)
-		self.listConnections.InsertColumn(3, _('SK connection ID'), width=300)
+		self.listConnections.InsertColumn(2, _('SK connection ID'), width=240)
 		self.listConnections.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onlistConnectionsSelected)
 		self.listConnections.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onlistConnectionsDeselected)
 
 		self.toolbar4 = wx.ToolBar(self.connections, style=wx.TB_TEXT | wx.TB_VERTICAL)
-		self.editSKButton = self.toolbar4.AddTool(401, _('Edit SK connection'), wx.Bitmap(self.currentdir+"/data/sk.png"))
-		self.Bind(wx.EVT_TOOL, self.OnEditSKButton, self.editSKButton)
-		self.refreshButton = self.toolbar4.AddTool(403, _('Refresh'), wx.Bitmap(self.currentdir+"/data/refresh.png"))
-		self.Bind(wx.EVT_TOOL, self.OnRefreshButton, self.refreshButton)
 		self.editConnButton = self.toolbar4.AddTool(402, _('Edit Port'), wx.Bitmap(self.currentdir+"/data/edit.png"))
 		self.Bind(wx.EVT_TOOL, self.OnEditConnButton, self.editConnButton)
+		self.toolbar4.AddSeparator()
+		skConnections = self.toolbar4.AddTool(403, _('Add Connection'), wx.Bitmap(self.currentdir+"/data/sk.png"))
+		self.Bind(wx.EVT_TOOL, self.OnSkConnections, skConnections)
+		self.editSKButton = self.toolbar4.AddTool(401, _('Edit connection'), wx.Bitmap(self.currentdir+"/data/edit.png"))
+		self.Bind(wx.EVT_TOOL, self.OnEditSKButton, self.editSKButton)
+		self.removeConnButton = self.toolbar4.AddTool(404, _('Remove connection'), wx.Bitmap(self.currentdir+"/data/cancel.png"))
+		self.Bind(wx.EVT_TOOL, self.OnRemoveConnButton, self.removeConnButton)
 
-		hbox = wx.BoxSizer(wx.HORIZONTAL)
-		hbox.Add(self.listConnections, 1, wx.EXPAND, 0)
-		hbox.Add(self.toolbar4, 0)
+		vbox = wx.BoxSizer(wx.HORIZONTAL)
+		vbox.Add(self.listConnections, 1, wx.EXPAND, 0)
+		vbox.Add(self.toolbar4, 0, wx.EXPAND, 0)
 
-		vbox = wx.BoxSizer(wx.VERTICAL)
-		vbox.Add(self.toolbar3, 0, wx.LEFT | wx.EXPAND, 0)
-		vbox.Add(hbox, 0, wx.LEFT | wx.EXPAND, 0)
-		vbox.AddStretchSpacer(1)
 		self.connections.SetSizer(vbox)
-		self.readConnections()
-		self.printConnections()
 
-	def OnEditSKButton(self, e):
+	def onlistConnectionsSelected(self,e):
+		i = e.GetIndex()
+		valid = e and i >= 0
+		self.onlistConnectionsDeselected()
+		if not valid: return
+		sensor = self.listConnections.GetItemText(i, 0)
+		port = self.listConnections.GetItemText(i, 1)
+		connection = self.listConnections.GetItemText(i, 2)
+		if connection:
+			self.toolbar4.EnableTool(401,True)
+			self.toolbar4.EnableTool(404,True)
+		else: self.toolbar4.EnableTool(403,True)
+		if port and sensor: self.toolbar4.EnableTool(402,True)
+
+	def onlistConnectionsDeselected(self,e=0):
+		self.toolbar4.EnableTool(401,False)
+		self.toolbar4.EnableTool(402,False)
+		self.toolbar4.EnableTool(403,False)
+		self.toolbar4.EnableTool(404,False)
+
+	def OnEditConnButton(self,e):
 		selected = self.listConnections.GetFirstSelected()
 		if selected == -1: return
-		skId = self.listConnections.GetItemText(selected, 3)
-		if self.platform.skPort: 
-			url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/connections/'+skId
-			webbrowser.open(url, new=2)
-		else: 
-			self.ShowStatusBarRED(_('Please install "Signal K Installer" OpenPlotter app'))
-			self.OnToolSettings()
+		sensor = self.listConnections.GetItemText(selected, 0)
+		port = self.listConnections.GetItemText(selected, 1)
+		dlg = editPort(port)
+		res = dlg.ShowModal()
+		if res == wx.ID_OK:
+			if sensor in self.i2c_sensors:
+				port2 = dlg.port.GetValue()
+				if not port2: port2 = 51000
+				self.i2c_sensors[sensor]['port'] = port2
+				self.OnApply()
+				self.readSensors()
+		dlg.Destroy()
 
-	def OnRefreshButton(self, e):
-		self.printConnections()
-
-	def readConnections(self):
-		from .ports import Ports
-		self.ports = Ports(self.conf, self.currentLanguage)
-
-	def printConnections(self):
-		self.toolbar4.EnableTool(402,False)
-		self.toolbar4.EnableTool(401,False)
-
-		self.sklist = []
-		try:
-			setting_file = self.platform.skDir+'/settings.json'
-			data = ''
-			with open(setting_file) as data_file:
-				data = ujson.load(data_file)
-			if 'pipedProviders' in data:
-				for i in data['pipedProviders']:
-					if i['pipeElements'][0]['options']['type']=='SignalK':
-						if i['pipeElements'][0]['options']['subOptions']['type']=='udp':
-							self.sklist.append([i['id'],i['enabled'],i['pipeElements'][0]['options']['subOptions']['port']])
-		except:pass
-
-		self.listConnections.DeleteAllItems()
-		for i in self.ports.connections:
-			if i['editable'] == '1': editable = _('yes')
-			else: editable = _('no')
-
-			skId = _('!Add Signal K connection')
-			enabled = False
-			for ii in self.sklist:
-				if ii[2] == str(i['port']):
-					skId = ii[0]
-					if ii[1]: enabled = True
-
-			self.listConnections.Append([i['type'], str(i['port']), editable, skId])
-			if enabled: self.listConnections.SetItemBackgroundColour(self.listConnections.GetItemCount()-1,(255,215,0))
-	
 	def OnSkConnections(self,e):
-		if self.platform.skPort: 
-			url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/connections/-'
-			webbrowser.open(url, new=2)
+		if self.platform.skPort:
+			selected = self.listConnections.GetFirstSelected()
+			if selected == -1: return
+			port = self.listConnections.GetItemText(selected, 1)
+			from openplotterSignalkInstaller import editSettings
+			skSettings = editSettings.EditSettings()
+			ID = 'I2C'
+			c = 0
+			while True:
+				if skSettings.connectionIdExists(ID):
+					ID = ID+str(c)
+					c = c + 1
+				else: break
+			if skSettings.setNetworkConnection(ID,'SignalK','UDP','localhost',port):
+				self.restart_SK(0)
+				self.readSensors()
+			else: self.ShowStatusBarRED(_('Failed. Error creating connection in Signal K'))
 		else: 
 			self.ShowStatusBarRED(_('Please install "Signal K Installer" OpenPlotter app'))
 			self.OnToolSettings()
+
+	def OnEditSKButton(self,e):
+		selected = self.listConnections.GetFirstSelected()
+		if selected == -1: return
+		skId = self.listConnections.GetItemText(selected, 2)
+		url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/connections/'+skId
+		webbrowser.open(url, new=2)
+
+	def OnRemoveConnButton(self,e):
+		selected = self.listConnections.GetFirstSelected()
+		if selected == -1: return
+		skId = self.listConnections.GetItemText(selected, 2)
+		from openplotterSignalkInstaller import editSettings
+		skSettings = editSettings.EditSettings()
+		if skSettings.removeConnection(skId): 
+			self.restart_SK(0)
+			self.readSensors()
+		else: self.ShowStatusBarRED(_('Failed. Error removing connection in Signal K'))
 
 	def OnSkTo0183(self,e):
 		if self.platform.skPort: 
@@ -423,51 +448,14 @@ class MyFrame(wx.Frame):
 			self.ShowStatusBarRED(_('Please install "Signal K Installer" OpenPlotter app'))
 			self.OnToolSettings()
 
-	def OnEditConnButton(self,e):
-		selected = self.listConnections.GetFirstSelected()
-		if selected == -1: return
-		dlg = editPort(self.ports.connections[selected]['port'])
-		res = dlg.ShowModal()
-		if res == wx.ID_OK:
-			self.ports.connections[selected]['port'] = dlg.port.GetValue()
-			self.printConnections()
-		dlg.Destroy()
-
-	def onlistConnectionsSelected(self,e):
-		i = e.GetIndex()
-		valid = e and i >= 0
-		if not valid: return
-		if self.ports.connections[i]['editable'] == '1': self.toolbar4.EnableTool(402,True)
-		else: self.toolbar4.EnableTool(402,False)
-		self.toolbar4.EnableTool(401,True)
-
-	def onlistConnectionsDeselected(self,e=0):
-		self.toolbar4.EnableTool(402,False)
-		self.toolbar4.EnableTool(401,False)
-
-	def OnToolApply(self,e):
-		self.conf.set('I2C', 'sensors', str(self.i2c_sensors))
-		try:
-			i2c_sensors = eval(self.conf.get('I2C', 'sensors'))
-		except: i2c_sensors = []
-		if i2c_sensors:
-			subprocess.Popen([self.platform.admin, 'python3', self.currentdir+'/service.py', 'enable'])
-			self.ShowStatusBarGREEN(_('Sending data enabled'))
-		else:
-			subprocess.Popen([self.platform.admin, 'python3', self.currentdir+'/service.py', 'disable'])
-			self.ShowStatusBarYELLOW(_('Sending data disabled'))
-		for i in self.ports.connections:
-			self.conf.set('I2C', i['id'], str(i['port']))
-		self.readSensors()
-		self.readConnections()
-		self.printConnections()
-		
-	def OnToolCancel(self,e):
-		self.ShowStatusBarRED(_('Changes canceled'))
-		self.readSensors()
-		self.readConnections()
-		self.printConnections()
-
+	def restart_SK(self, msg):
+		if msg == 0: msg = _('Restarting Signal K server... ')
+		seconds = 12
+		subprocess.call([self.platform.admin, 'python3', self.currentdir+'/service.py', 'restart'])
+		for i in range(seconds, 0, -1):
+			self.ShowStatusBarYELLOW(msg+str(i))
+			time.sleep(1)
+		self.ShowStatusBarGREEN(_('Signal K server restarted'))
 
 ################################################################################
 
@@ -491,7 +479,7 @@ class addI2c(wx.Dialog):
 
 		self.list_sensors = []
 		for i in i2c_sensors_def:
-			self.list_sensors.append(i[0])
+			self.list_sensors.append(i)
 		self.sensor_select = wx.ComboBox(panel, choices=self.list_sensors, style=wx.CB_READONLY, size = (200,-1))
 		self.sensor_select.Bind(wx.EVT_COMBOBOX, self.onSelectSensor)
 
@@ -545,7 +533,6 @@ class addI2c(wx.Dialog):
 				addr = hex(addr)
 				if addr == '0x76': self.list_detected.Append(['BME280', addr])
 				if addr == '0x77': self.list_detected.Append(['MS5607-02BA03', addr])
-				#if addr == '0x40': self.list_detected.Append(['Si7020-A20', addr])
 			except IOError: pass
 
 ################################################################################
@@ -631,7 +618,7 @@ class editPort(wx.Dialog):
 	def __init__(self, port):
 		wx.Dialog.__init__(self, None, title=_('Port'), size=(200,150))
 		panel = wx.Panel(self)
-		self.port = wx.SpinCtrl(panel, 101, min=4000, max=65536, initial=50000)
+		self.port = wx.SpinCtrl(panel, 101, min=4000, max=65536, initial=51000)
 		self.port.SetValue(int(port))
 
 		cancelBtn = wx.Button(panel, wx.ID_CANCEL)

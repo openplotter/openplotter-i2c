@@ -20,19 +20,20 @@ from openplotterSettings import conf
 from .bme280 import Bme280
 from .ms5607 import Ms5607
 
-def work_bme280(bme280,i2c_port):
+def work_bme280(bme280,data):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	name = bme280[0]
-	address = bme280[1]
-	pressureSK = bme280[2][0][0]
-	pressureRate = bme280[2][0][1]
-	pressureOffset = bme280[2][0][2]
-	temperatureSK = bme280[2][1][0]
-	temperatureRate = bme280[2][1][1]
-	temperatureOffset = bme280[2][1][2]
-	humiditySK = bme280[2][2][0]
-	humidityRate = bme280[2][2][1]
-	humidityOffset = bme280[2][2][2]
+	name = bme280
+	port = data['port']
+	address = address = data['address']
+	pressureSK = data['data'][0]['SKkey']
+	pressureRate = data['data'][0]['rate']
+	pressureOffset = data['data'][0]['offset']
+	temperatureSK = data['data'][1]['SKkey']
+	temperatureRate = data['data'][1]['rate']
+	temperatureOffset = data['data'][1]['offset']
+	humiditySK = data['data'][2]['SKkey']
+	humidityRate = data['data'][2]['rate']
+	humidityOffset = data['data'][2]['offset']
 	try:
 		bme = Bme280(address)
 		tick1 = time.time()
@@ -58,19 +59,20 @@ def work_bme280(bme280,i2c_port):
 			if Erg:		
 				SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
 				SignalK+=Erg[0:-1]+']}]}\n'		
-				sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', i2c_port))
+				sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
 	except Exception as e: print ("BME280 reading failed: "+str(e))
 
-def work_MS5607(MS5607,i2c_port):
+def work_MS5607(MS5607,data):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	name = MS5607[0]
-	address = MS5607[1]
-	pressureSK = MS5607[2][0][0]
-	pressureRate = MS5607[2][0][1]
-	pressureOffset = MS5607[2][0][2]
-	temperatureSK = MS5607[2][1][0]
-	temperatureRate = MS5607[2][1][1]
-	temperatureOffset = MS5607[2][1][2]
+	name = MS5607
+	port = data['port']
+	address = data['address']
+	pressureSK = data['data'][0]['SKkey']
+	pressureRate = data['data'][0]['rate']
+	pressureOffset = data['data'][0]['offset']
+	temperatureSK = data['data'][1]['SKkey']
+	temperatureRate = data['data'][1]['rate']
+	temperatureOffset = data['data'][1]['offset']
 	try:
 		MS = Ms5607(address)
 		tick1 = time.time()
@@ -94,25 +96,23 @@ def work_MS5607(MS5607,i2c_port):
 			if Erg:		
 				SignalK='{"updates":[{"$source":"OPsensors.I2C.'+name+'","values":['
 				SignalK+=Erg[0:-1]+']}]}\n'		
-				sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', i2c_port))
+				sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
 	except Exception as e: print ("MS5607-02BA03 reading failed: "+str(e))
 
 def main():
 	conf2 = conf.Conf()
 	active = False
-	try:
-		i2c_sensors=eval(conf2.get('I2C', 'sensors'))
-		i2c_port = int(conf2.get('I2C', 'i2cConn1'))
+	try: i2c_sensors=eval(conf2.get('I2C', 'sensors'))
 	except: i2c_sensors=[]
 
-	if i2c_sensors and i2c_port:
+	if i2c_sensors:
 		for i in i2c_sensors:
-			if i[0] == 'BME280':
-				x = threading.Thread(target=work_bme280, args=(i,i2c_port), daemon=True)
+			if i == 'BME280':
+				x = threading.Thread(target=work_bme280, args=(i,i2c_sensors[i]), daemon=True)
 				x.start()
 				active = True
-			elif i[0] == 'MS5607-02BA03':
-				x = threading.Thread(target=work_MS5607, args=(i,i2c_port), daemon=True)
+			elif i == 'MS5607-02BA03':
+				x = threading.Thread(target=work_MS5607, args=(i,i2c_sensors[i]), daemon=True)
 				x.start()
 				active = True
 		while active:

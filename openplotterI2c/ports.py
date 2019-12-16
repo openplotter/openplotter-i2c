@@ -23,13 +23,12 @@ class Ports:
 		currentdir = os.path.dirname(__file__)
 		language.Language(currentdir,'openplotter-i2c',currentLanguage)
 		self.connections = []
-		connectionId = 'i2cConn1'
-		try: port = int(self.conf.get('I2C', connectionId))
-		except: port = 51000 #default port
-		self.connections.append({'id':connectionId, 'description':_('I2C Sensors'), 'data':_('Signal K keys: '), 'direction':'2', 'type':'UDP', 'mode':'client', 'address':'localhost', 'port':port, 'editable':'1'})
 
 	def usedPorts(self):
 		try:
 			i2c_sensors = eval(self.conf.get('I2C', 'sensors'))
 		except: i2c_sensors = []
-		if i2c_sensors: return self.connections
+		if i2c_sensors:
+			for i in i2c_sensors:
+				self.connections.append({'id':i, 'description':_('I2C Sensors'), 'data':'Signal K', 'direction':'2', 'type':'UDP', 'mode':'client', 'address':'localhost', 'port':i2c_sensors[i]['port'], 'editable':'1'})
+		return self.connections

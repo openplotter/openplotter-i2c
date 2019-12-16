@@ -15,22 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Openplotter. If not, see <http://www.gnu.org/licenses/>.
 
-import time, subprocess, os, sys
+import subprocess, os, sys, ujson
 from openplotterSettings import language
+from openplotterSettings import platform
 
-#TODO set network startup
 class Start():
 	def __init__(self, conf, currentLanguage):
 		self.conf = conf
 		self.initialMessage = ''
-
 		
 	def start(self):
 		green = ''
 		black = ''
 		red = ''
 
-		time.sleep(2)
 		return {'green': green,'black': black,'red': red}
 
 class Check():
@@ -42,9 +40,14 @@ class Check():
 
 
 	def check(self):
+		platform2 = platform.Platform()
 		green = ''
 		black = ''
 		red = ''
+
+		data = self.conf.get('I2C', 'sensors')
+		try: i2c_sensors = eval(data)
+		except: i2c_sensors = {}
 
 		try:
 			subprocess.check_output(['i2cdetect', '-y', '0']).decode(sys.stdin.encoding)
@@ -58,11 +61,25 @@ class Check():
 					green = _('running')
 				except: black += _(' | not running')
 			except:
-				data = self.conf.get('I2C', 'sensors')
-				try: i2c_sensors = eval(data)
-				except: i2c_sensors = ''
 				if i2c_sensors: red = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
 				else: black = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
+			try:
+				setting_file = platform2.skDir+'/settings.json'
+				with open(setting_file) as data_file:
+					skdata = ujson.load(data_file)
+			except: skdata = {}
+
+			for i in i2c_sensors:
+				print (i)
+				exists = False
+				if 'pipedProviders' in skdata:
+					for ii in skdata['pipedProviders']:
+						if ii['pipeElements'][0]['options']['type']=='SignalK':
+							if ii['pipeElements'][0]['options']['subOptions']['type']=='udp':
+								if ii['pipeElements'][0]['options']['subOptions']['port'] == str(i2c_sensors[i]['port']): exists = True
+				if not exists: 
+					if not red: red = _('There is not Signal K connection for sensor: ')+ i
+					else: red += '\n'+_('There is not Signal K connection for sensor: ')+ i
 
 		return {'green': green,'black': black,'red': red}
 

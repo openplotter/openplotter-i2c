@@ -12,23 +12,24 @@ Install [openplotter-settings](https://github.com/openplotter/openplotter-settin
 
 Install [openplotter-settings](https://github.com/openplotter/openplotter-settings) for **development**.
 
-Install dependencies:
+Install openplotter-i2c dependencies:
 
 `sudo apt install i2c-tools`
 
-Clone the repository:
+Install:
+```
+cd openplotter-i2c
+sudo python3 setup.py install
+```
+Run post-installation script:
 
-`git clone https://github.com/openplotter/openplotter-i2c`
-
-Make your changes and install:
-
-`sudo python3 setup.py install`
+`sudo i2cPostInstall`
 
 Run:
 
 `openplotter-i2c`
 
-Pull request your changes to github and we will check and add them to the next version of the [Debian package](https://launchpad.net/~openplotter/+archive/ubuntu/openplotter/).
+Make your changes and repeat installation and post-installation steps to test. Pull request your changes to github and we will check and add them to the next version of the [Debian package](https://launchpad.net/~openplotter/+archive/ubuntu/openplotter/).
 
 ### Documentation
 

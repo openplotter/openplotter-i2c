@@ -28,7 +28,7 @@ def main():
 	print(_('Adding openplotter-i2c-read service...'))
 	try:
 		fo = open('/etc/systemd/system/openplotter-i2c-read.service', "w")
-		fo.write( '[Service]\nExecStart=openplotter-i2c-read\nStandardOutput=syslog\nStandardError=syslog\nUser='+conf2.user+'\n[Install]\nWantedBy=multi-user.target')
+		fo.write( '[Service]\nExecStart=openplotter-i2c-read\nStandardOutput=syslog\nStandardError=syslog\nUser='+conf2.user+'\nRestart=always\nRestartSec=5\n\n[Install]\nWantedBy=multi-user.target')
 		fo.close()
 		subprocess.call(['systemctl', 'daemon-reload'])
 		print(_('DONE'))

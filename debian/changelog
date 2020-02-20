@@ -1,5 +1,5 @@
-openplotter-i2c (2.0.6-beta) bionic; urgency=medium
+openplotter-i2c (2.0.7-stable) buster; urgency=medium
 
   * Candidate release
 
- -- Sailoog <info@sailoog.com>  Mon, 16 Dec 2019 17:10:17 +0100
+ -- Sailoog <info@sailoog.com>  Thu, 20 Feb 2020 19:09:55 +0100

@@ -25,6 +25,7 @@ from openplotterSettings import platform
 from openplotterSettings import selectKey
 from openplotterSettings import selectConnections
 from .startup import Check
+from .version import version
 
 class MyFrame(wx.Frame):
 	def __init__(self):
@@ -35,7 +36,7 @@ class MyFrame(wx.Frame):
 		self.currentLanguage = self.conf.get('GENERAL', 'lang')
 		self.language = language.Language(self.currentdir,'openplotter-i2c',self.currentLanguage)
 
-		wx.Frame.__init__(self, None, title=_('OpenPlotter I2C'), size=(800,444))
+		wx.Frame.__init__(self, None, title='I2C '+version, size=(800,444))
 		self.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		icon = wx.Icon(self.currentdir+"/data/openplotter-i2c.png", wx.BITMAP_TYPE_PNG)
 		self.SetIcon(icon)
@@ -638,6 +639,13 @@ class editPort(wx.Dialog):
 ################################################################################
 
 def main():
+	try:
+		platform2 = platform.Platform()
+		if not platform2.postInstall(version,'i2c'):
+			subprocess.Popen(['openplotterPostInstall', platform2.admin+' i2cPostInstall'])
+			return
+	except: pass
+
 	app = wx.App()
 	MyFrame().Show()
 	time.sleep(1)

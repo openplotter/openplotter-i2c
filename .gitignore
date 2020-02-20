@@ -1,0 +1,8 @@
+*.egg-info/
+debian/*/
+debian/*debhelper*
+debian/files
+debian/*.substvars
+.pybuild/
+*/__pycache__/
+build/

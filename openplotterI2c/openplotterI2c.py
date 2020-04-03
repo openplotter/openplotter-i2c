@@ -170,6 +170,7 @@ class MyFrame(wx.Frame):
 		self.listSensors.InsertColumn(6, _('Offset'), width=50)
 		self.listSensors.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onListSensorsSelected)
 		self.listSensors.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onListSensorsDeselected)
+		self.listSensors.SetTextColour(wx.BLACK)
 
 		self.toolbar2 = wx.ToolBar(self.i2c, style=wx.TB_TEXT | wx.TB_VERTICAL)
 		self.addButton = self.toolbar2.AddTool(201, _('Add'), wx.Bitmap(self.currentdir+"/data/i2c.png"))
@@ -335,6 +336,7 @@ class MyFrame(wx.Frame):
 		self.listConnections.InsertColumn(2, _('SK connection ID'), width=240)
 		self.listConnections.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onlistConnectionsSelected)
 		self.listConnections.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onlistConnectionsDeselected)
+		self.listConnections.SetTextColour(wx.BLACK)
 
 		self.toolbar4 = wx.ToolBar(self.connections, style=wx.TB_TEXT | wx.TB_VERTICAL)
 		self.editConnButton = self.toolbar4.AddTool(402, _('Edit Port'), wx.Bitmap(self.currentdir+"/data/edit.png"))
@@ -473,6 +475,7 @@ class addI2c(wx.Dialog):
 		self.list_detected.InsertColumn(0, _('Name'), width=330)
 		self.list_detected.InsertColumn(1, _('Address'), width=100)
 		self.list_detected.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onSelectDetected)
+		self.list_detected.SetTextColour(wx.BLACK)
 
 		hline1 = wx.StaticLine(panel)
 

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
-"POT-Creation-Date: 2020-02-20 19:06+0100\n"
-"PO-Revision-Date: 2020-02-28 18:51+0100\n"
+"POT-Creation-Date: 2020-04-03 13:08+0200\n"
+"PO-Revision-Date: 2020-04-05 12:37+0200\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -72,11 +72,11 @@ msgstr "Verbindungen"
 msgid "Failed"
 msgstr "Fehlgeschlagen"
 
-#: openplotterI2c.py:165 openplotterI2c.py:473
+#: openplotterI2c.py:165 openplotterI2c.py:475
 msgid "Name"
 msgstr "Name"
 
-#: openplotterI2c.py:166 openplotterI2c.py:474
+#: openplotterI2c.py:166 openplotterI2c.py:476
 msgid "Address"
 msgstr "Adresse"
 
@@ -84,7 +84,7 @@ msgstr "Adresse"
 msgid "Magnitude"
 msgstr "Ausmaß"
 
-#: openplotterI2c.py:168 openplotterI2c.py:549
+#: openplotterI2c.py:168 openplotterI2c.py:552
 msgid "Signal K key"
 msgstr "Signal K Schlüssel"
 
@@ -92,115 +92,115 @@ msgstr "Signal K Schlüssel"
 msgid "Rate"
 msgstr "Rate"
 
-#: openplotterI2c.py:170 openplotterI2c.py:567
+#: openplotterI2c.py:170 openplotterI2c.py:570
 msgid "Offset"
 msgstr "Offset"
 
-#: openplotterI2c.py:175
+#: openplotterI2c.py:176
 msgid "Add"
 msgstr "Hinzufügen"
 
-#: openplotterI2c.py:177 openplotterI2c.py:544 openplotterI2c.py:553
+#: openplotterI2c.py:178 openplotterI2c.py:547 openplotterI2c.py:556
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: openplotterI2c.py:179
+#: openplotterI2c.py:180
 msgid "Remove"
 msgstr "Entfernen"
 
-#: openplotterI2c.py:194 openplotterI2c.py:195
+#: openplotterI2c.py:195 openplotterI2c.py:196
 msgid "pressure"
 msgstr "luftdruck"
 
-#: openplotterI2c.py:194 openplotterI2c.py:195
+#: openplotterI2c.py:195 openplotterI2c.py:196
 msgid "temperature"
 msgstr "temperatur"
 
-#: openplotterI2c.py:194
+#: openplotterI2c.py:195
 msgid "humidity"
 msgstr "luftfeuchte"
 
-#: openplotterI2c.py:249
+#: openplotterI2c.py:250
 msgid "Failed. You must select a sensor."
 msgstr "Fehlgeschlagen. Sie müssen einen Sensor auswählen."
 
-#: openplotterI2c.py:254
+#: openplotterI2c.py:255
 msgid "Failed. You must provide an address."
 msgstr "Fehlgeschlagen. Sie müssen eine Adresse angeben."
 
-#: openplotterI2c.py:312
+#: openplotterI2c.py:313
 msgid "I2C service is enabled"
 msgstr "I2C-Dienst ist aktiviert"
 
-#: openplotterI2c.py:315
+#: openplotterI2c.py:316
 msgid "There is nothing to send. I2C service is disabled"
 msgstr "Es gibt nichts zu senden. I2C-Dienst ist deaktiviert"
 
-#: openplotterI2c.py:333
+#: openplotterI2c.py:334
 msgid "Sensor"
 msgstr "Sensor"
 
-#: openplotterI2c.py:334 openplotterI2c.py:620
+#: openplotterI2c.py:335 openplotterI2c.py:623
 msgid "Port"
 msgstr "Port"
 
-#: openplotterI2c.py:335
+#: openplotterI2c.py:336
 msgid "SK connection ID"
 msgstr "SK-Verbindungs-ID"
 
-#: openplotterI2c.py:340
+#: openplotterI2c.py:342
 msgid "Edit Port"
 msgstr "Port bearbeiten"
 
-#: openplotterI2c.py:343
+#: openplotterI2c.py:345
 msgid "Add Connection"
 msgstr "Verbindung hinzufügen"
 
-#: openplotterI2c.py:345
+#: openplotterI2c.py:347
 msgid "Edit connection"
 msgstr "Verbindung bearbeiten"
 
-#: openplotterI2c.py:347
+#: openplotterI2c.py:349
 msgid "Remove connection"
 msgstr "Verbindung entfernen"
 
-#: openplotterI2c.py:409
+#: openplotterI2c.py:411
 msgid "Failed. Error creating connection in Signal K"
 msgstr "Fehlgeschlagen. Fehler beim Erstellen der Verbindung in Signal K"
 
-#: openplotterI2c.py:411 openplotterI2c.py:437 openplotterI2c.py:449
+#: openplotterI2c.py:413 openplotterI2c.py:439 openplotterI2c.py:451
 msgid "Please install \"Signal K Installer\" OpenPlotter app"
 msgstr "Bitte installieren Sie \"Signal K Installer\" OpenPlotter App"
 
-#: openplotterI2c.py:430
+#: openplotterI2c.py:432
 msgid "Failed. Error removing connection in Signal K"
 msgstr "Fehlgeschlagen. Fehler beim Entfernen der Verbindung in Signal K"
 
-#: openplotterI2c.py:445
+#: openplotterI2c.py:447
 msgid "Please install \"signalk-to-nmea2000\" Signal K app"
 msgstr "Bitte installieren Sie \"signalk-to-nmea2000\" Signal K App"
 
-#: openplotterI2c.py:453
+#: openplotterI2c.py:455
 msgid "Restarting Signal K server... "
 msgstr "Starte Signal K-Server neu... "
 
-#: openplotterI2c.py:459
+#: openplotterI2c.py:461
 msgid "Signal K server restarted"
 msgstr "Signal K Server neu gestartet"
 
-#: openplotterI2c.py:466
+#: openplotterI2c.py:468
 msgid "Add I2C sensor"
 msgstr "I2C-Sensor hinzufügen"
 
-#: openplotterI2c.py:470
+#: openplotterI2c.py:472
 msgid "detected"
 msgstr "erkannt"
 
-#: openplotterI2c.py:479
+#: openplotterI2c.py:482
 msgid "add/update sensor"
 msgstr "sensor hinzufügen / aktualisieren"
 
-#: openplotterI2c.py:563
+#: openplotterI2c.py:566
 msgid "Rate (seconds)"
 msgstr "Rate (Sekunden)"
 
@@ -233,5 +233,5 @@ msgid "Please enable I2C interface in Preferences -> Raspberry Pi configuration 
 msgstr "Bitte aktivieren Sie die I2C-Schnittstelle unter Einstellungen -> Raspberry Pi Konfiguration -> Schnittstellen."
 
 #: startup.py:81 startup.py:82
-msgid "There is not Signal K connection for sensor: "
+msgid "There is no Signal K connection for sensor: "
 msgstr "Es gibt keine Signal K Verbindung für Sensor: "

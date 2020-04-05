@@ -1,3 +1,11 @@
+openplotter-i2c (2.1.1-stable) bionic; urgency=medium
+
+  * Change text
+  * Fix error parsing SK settings
+  * Update languages
+
+ -- Sailoog <info@sailoog.com>  Sun, 05 Apr 2020 12:41:19 +0200
+
 openplotter-i2c (2.1.0-stable) bionic; urgency=medium
 
   * Initial release

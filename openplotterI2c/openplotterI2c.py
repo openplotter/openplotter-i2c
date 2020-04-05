@@ -220,9 +220,11 @@ class MyFrame(wx.Frame):
 			skSettings = editSettings.EditSettings()
 			if 'pipedProviders' in skSettings.data:
 				for i in skSettings.data['pipedProviders']:
-					if i['pipeElements'][0]['options']['type']=='SignalK':
-						if i['pipeElements'][0]['options']['subOptions']['type']=='udp':
-							sklist.append([i['id'],i['enabled'],i['pipeElements'][0]['options']['subOptions']['port']])
+					try:
+						if i['pipeElements'][0]['options']['type']=='SignalK':
+							if i['pipeElements'][0]['options']['subOptions']['type']=='udp':
+								sklist.append([i['id'],i['enabled'],i['pipeElements'][0]['options']['subOptions']['port']])
+					except Exception as e: print(str(e))
 		for i in sklist:
 			exists = False
 			for ii in range(self.listConnections.GetItemCount()):

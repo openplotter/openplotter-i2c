@@ -34,13 +34,15 @@ def work_bme280(bme280,data):
 	humiditySK = data['data'][2]['SKkey']
 	humidityRate = data['data'][2]['rate']
 	humidityOffset = data['data'][2]['offset']
-	bme = Bme280(address)
+	bme = None
 	tick1 = time.time()
 	tick2 = tick1
 	tick3 = tick1
 	while True:
 		time.sleep(0.1)
 		try:
+			if not bme:
+				bme = Bme280(address)
 			temperature,pressure,humidity = bme.readBME280All()
 			tick0 = time.time()
 			Erg=''
@@ -73,12 +75,14 @@ def work_MS5607(MS5607,data):
 	temperatureSK = data['data'][1]['SKkey']
 	temperatureRate = data['data'][1]['rate']
 	temperatureOffset = data['data'][1]['offset']
-	MS = Ms5607(address)
+	MS = None
 	tick1 = time.time()
 	tick2 = tick1
 	while True:
 		time.sleep(0.1)
 		try:
+			if not MS:
+				MS = Ms5607(address)
 			dig_temperature = MS.getDigitalTemperature()
 			dig_pressure = MS.getDigitalPressure()
 			pressure = MS.convertPressureTemperature(dig_pressure, dig_temperature)

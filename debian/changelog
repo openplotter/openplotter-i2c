@@ -1,3 +1,10 @@
+openplotter-i2c (2.1.2-stable) bionic; urgency=medium
+
+  * Handle bus access exceptions at startup
+  * Update translations
+
+ -- Sailoog <info@sailoog.com>  Thu, 13 Aug 2020 19:13:37 +0200
+
 openplotter-i2c (2.1.1-stable) bionic; urgency=medium
 
   * Change text

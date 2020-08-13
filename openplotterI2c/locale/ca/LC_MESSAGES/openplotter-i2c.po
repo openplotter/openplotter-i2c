@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
 "POT-Creation-Date: 2020-04-03 13:08+0200\n"
-"PO-Revision-Date: 2020-04-05 12:37+0200\n"
+"PO-Revision-Date: 2020-08-13 19:12+0200\n"
 "Last-Translator: \n"
 "Language-Team: Catalan\n"
 "Language: ca\n"
@@ -14,8 +14,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Crowdin-Project: openplotter\n"
+"X-Crowdin-Project-ID: 289888\n"
 "X-Crowdin-Language: ca\n"
 "X-Crowdin-File: openplotter-i2c.po\n"
+"X-Crowdin-File-ID: 15\n"
 "X-Poedit-SearchPath-0: .\n"
 
 #: i2cPostInstall.py:28
@@ -25,16 +27,16 @@ msgstr ""
 #: i2cPostInstall.py:34 i2cPostInstall.py:40 i2cPreUninstall.py:33
 #: i2cPreUninstall.py:39
 msgid "DONE"
-msgstr ""
+msgstr "FET"
 
 #: i2cPostInstall.py:35 i2cPostInstall.py:41 i2cPreUninstall.py:34
 #: i2cPreUninstall.py:40
 msgid "FAILED: "
-msgstr ""
+msgstr "ERROR: "
 
 #: i2cPostInstall.py:37
 msgid "Setting version..."
-msgstr ""
+msgstr "Establint la versió..."
 
 #: i2cPreUninstall.py:27
 msgid "Removing openplotter-i2c-read service..."
@@ -42,51 +44,51 @@ msgstr ""
 
 #: i2cPreUninstall.py:36
 msgid "Removing version..."
-msgstr ""
+msgstr "Eliminant versió..."
 
 #: openplotterI2c.py:49
 msgid "Help"
-msgstr ""
+msgstr "Ajuda"
 
 #: openplotterI2c.py:52
 msgid "Settings"
-msgstr ""
+msgstr "Configuració"
 
 #: openplotterI2c.py:55
 msgid "I2C Addresses"
-msgstr ""
+msgstr "Adreces I2C"
 
 #: openplotterI2c.py:58
 msgid "Refresh"
-msgstr ""
+msgstr "Actualitza"
 
 #: openplotterI2c.py:71
 msgid "Sensors"
-msgstr ""
+msgstr "Sensors"
 
 #: openplotterI2c.py:72
 msgid "Connections"
-msgstr ""
+msgstr "Connexions"
 
 #: openplotterI2c.py:153
 msgid "Failed"
-msgstr ""
+msgstr "Error"
 
 #: openplotterI2c.py:165 openplotterI2c.py:475
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: openplotterI2c.py:166 openplotterI2c.py:476
 msgid "Address"
-msgstr ""
+msgstr "Adreça"
 
 #: openplotterI2c.py:167
 msgid "Magnitude"
-msgstr ""
+msgstr "Magnitud"
 
 #: openplotterI2c.py:168 openplotterI2c.py:552
 msgid "Signal K key"
-msgstr ""
+msgstr "Clau Signal K"
 
 #: openplotterI2c.py:169
 msgid "Rate"
@@ -98,83 +100,83 @@ msgstr ""
 
 #: openplotterI2c.py:176
 msgid "Add"
-msgstr ""
+msgstr "Afegeix"
 
 #: openplotterI2c.py:178 openplotterI2c.py:547 openplotterI2c.py:556
 msgid "Edit"
-msgstr ""
+msgstr "Edita"
 
 #: openplotterI2c.py:180
 msgid "Remove"
-msgstr ""
+msgstr "Elimina"
 
 #: openplotterI2c.py:195 openplotterI2c.py:196
 msgid "pressure"
-msgstr ""
+msgstr "pressió"
 
 #: openplotterI2c.py:195 openplotterI2c.py:196
 msgid "temperature"
-msgstr ""
+msgstr "temperatura"
 
 #: openplotterI2c.py:195
 msgid "humidity"
-msgstr ""
+msgstr "humitat"
 
 #: openplotterI2c.py:250
 msgid "Failed. You must select a sensor."
-msgstr ""
+msgstr "Error. És necessari seleccionar un sensor."
 
 #: openplotterI2c.py:255
 msgid "Failed. You must provide an address."
-msgstr ""
+msgstr "Error. És necessari indicar una adreça."
 
 #: openplotterI2c.py:313
 msgid "I2C service is enabled"
-msgstr ""
+msgstr "Servei I2C habilitat"
 
 #: openplotterI2c.py:316
 msgid "There is nothing to send. I2C service is disabled"
-msgstr ""
+msgstr "Res a enviar. El servei I2C està deshabilitat"
 
 #: openplotterI2c.py:334
 msgid "Sensor"
-msgstr ""
+msgstr "Sensor"
 
 #: openplotterI2c.py:335 openplotterI2c.py:623
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: openplotterI2c.py:336
 msgid "SK connection ID"
-msgstr ""
+msgstr "ID de connexió SK"
 
 #: openplotterI2c.py:342
 msgid "Edit Port"
-msgstr ""
+msgstr "Edita el port"
 
 #: openplotterI2c.py:345
 msgid "Add Connection"
-msgstr ""
+msgstr "Afegeix una connexió"
 
 #: openplotterI2c.py:347
 msgid "Edit connection"
-msgstr ""
+msgstr "Edita una connexió"
 
 #: openplotterI2c.py:349
 msgid "Remove connection"
-msgstr ""
+msgstr "Elimina la connexió"
 
 #: openplotterI2c.py:411
 msgid "Failed. Error creating connection in Signal K"
-msgstr ""
+msgstr "Error al crear la connexió a Signal K"
 
 #: openplotterI2c.py:413 openplotterI2c.py:439 openplotterI2c.py:451
 msgid "Please install \"Signal K Installer\" OpenPlotter app"
-msgstr ""
+msgstr "Si us plau instal·la l'aplicació d'OpenPlotter \"Instal·lador de SignalK\""
 
 #: openplotterI2c.py:432
 msgid "Failed. Error removing connection in Signal K"
-msgstr ""
+msgstr "Error al eliminar la connexió a Signal K"
 
 #: openplotterI2c.py:447
 msgid "Please install \"signalk-to-nmea2000\" Signal K app"
@@ -182,43 +184,43 @@ msgstr ""
 
 #: openplotterI2c.py:455
 msgid "Restarting Signal K server... "
-msgstr ""
+msgstr "Reiniciant el servidor Signal K... "
 
 #: openplotterI2c.py:461
 msgid "Signal K server restarted"
-msgstr ""
+msgstr "Servidor Signal K reiniciat"
 
 #: openplotterI2c.py:468
 msgid "Add I2C sensor"
-msgstr ""
+msgstr "Afegeix sensor I2C"
 
 #: openplotterI2c.py:472
 msgid "detected"
-msgstr ""
+msgstr "detectat"
 
 #: openplotterI2c.py:482
 msgid "add/update sensor"
-msgstr ""
+msgstr "afegeix/actualitza sensor"
 
 #: openplotterI2c.py:566
 msgid "Rate (seconds)"
-msgstr ""
+msgstr "Freqüència (segons)"
 
 #: ports.py:33
 msgid "I2C Sensors"
-msgstr ""
+msgstr "Sensors I2C"
 
 #: startup.py:39
 msgid "Checking I2C sensors..."
-msgstr ""
+msgstr "Comprovant sensors I2C..."
 
 #: startup.py:54
 msgid "Your Raspberry Pi is too old."
-msgstr ""
+msgstr "La teva Raspberry Pi és un model massa antic."
 
 #: startup.py:58
 msgid "I2C enabled"
-msgstr ""
+msgstr "I2C activat"
 
 #: startup.py:61
 msgid "running"

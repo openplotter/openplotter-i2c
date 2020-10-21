@@ -30,5 +30,5 @@ class Ports:
 		except: i2c_sensors = []
 		if i2c_sensors:
 			for i in i2c_sensors:
-				self.connections.append({'id':i, 'description':_('I2C Sensors'), 'data':'Signal K', 'direction':'2', 'type':'UDP', 'mode':'client', 'address':'localhost', 'port':i2c_sensors[i]['port'], 'editable':'1'})
+				self.connections.append({'id':i, 'description':_('I2C Sensors'), 'data':'Signal K', 'direction':'2', 'type':'UDP', 'mode':'client', 'address':'localhost', 'port':str(i2c_sensors[i]['port']), 'editable':'1'})
 		return self.connections

@@ -4,8 +4,8 @@ msgstr ""
 "POT-Creation-Date: 2020-04-03 13:08+0200\n"
 "PO-Revision-Date: 2020-10-19 10:34\n"
 "Last-Translator: \n"
-"Language-Team: Finnish\n"
-"Language: fi\n"
+"Language-Team: Norwegian Bokmal\n"
+"Language: nb_NO\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,225 +16,225 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Crowdin-Project: openplotter\n"
 "X-Crowdin-Project-ID: 289888\n"
-"X-Crowdin-Language: fi\n"
+"X-Crowdin-Language: nb\n"
 "X-Crowdin-File: openplotter-i2c.po\n"
 "X-Crowdin-File-ID: 15\n"
 
 #: i2cPostInstall.py:28
 msgid "Adding openplotter-i2c-read service..."
-msgstr "Lisätään openplotter-i2c-luku palvelu..."
+msgstr "Legger til openplotter-i2c-read tjeneste..."
 
 #: i2cPostInstall.py:34 i2cPostInstall.py:40 i2cPreUninstall.py:33
 #: i2cPreUninstall.py:39
 msgid "DONE"
-msgstr "VALMIS"
+msgstr "FERDIG"
 
 #: i2cPostInstall.py:35 i2cPostInstall.py:41 i2cPreUninstall.py:34
 #: i2cPreUninstall.py:40
 msgid "FAILED: "
-msgstr "EPÄONNISTUNUT: "
+msgstr "MISLYKKET: "
 
 #: i2cPostInstall.py:37
 msgid "Setting version..."
-msgstr "Asetetaan versio..."
+msgstr "Angir versjon..."
 
 #: i2cPreUninstall.py:27
 msgid "Removing openplotter-i2c-read service..."
-msgstr "Poistetaan openplotter-i2c-luku palvelu..."
+msgstr "Fjerner openplotter-i2c-read tjeneste..."
 
 #: i2cPreUninstall.py:36
 msgid "Removing version..."
-msgstr "Poistetaan versio..."
+msgstr "Fjerner versjon..."
 
 #: openplotterI2c.py:49
 msgid "Help"
-msgstr "Ohje"
+msgstr "Hjelp"
 
 #: openplotterI2c.py:52
 msgid "Settings"
-msgstr "Asetukset"
+msgstr "Innstillinger"
 
 #: openplotterI2c.py:55
 msgid "I2C Addresses"
-msgstr "I2C Osoitteet"
+msgstr "I2C-adresser"
 
 #: openplotterI2c.py:58
 msgid "Refresh"
-msgstr "Päivitä"
+msgstr "Oppdater"
 
 #: openplotterI2c.py:71
 msgid "Sensors"
-msgstr "Anturit"
+msgstr "Sensorer"
 
 #: openplotterI2c.py:72
 msgid "Connections"
-msgstr "Yhteydet"
+msgstr "Tilkoblinger"
 
 #: openplotterI2c.py:153
 msgid "Failed"
-msgstr "Epäonnistui"
+msgstr "Mislyktes"
 
 #: openplotterI2c.py:165 openplotterI2c.py:475
 msgid "Name"
-msgstr "Nimi"
+msgstr "Navn"
 
 #: openplotterI2c.py:166 openplotterI2c.py:476
 msgid "Address"
-msgstr "Osoite"
+msgstr "Adresse"
 
 #: openplotterI2c.py:167
 msgid "Magnitude"
-msgstr "Laajuus"
+msgstr "Magnitude"
 
 #: openplotterI2c.py:168 openplotterI2c.py:552
 msgid "Signal K key"
-msgstr "Signal K näppäin"
+msgstr "Signal K nøkkel"
 
 #: openplotterI2c.py:169
 msgid "Rate"
-msgstr "Taso"
+msgstr "Rate"
 
 #: openplotterI2c.py:170 openplotterI2c.py:570
 msgid "Offset"
-msgstr "Siirtymä"
+msgstr "Forskyvning"
 
 #: openplotterI2c.py:176
 msgid "Add"
-msgstr "Lisää"
+msgstr "Legg til"
 
 #: openplotterI2c.py:178 openplotterI2c.py:547 openplotterI2c.py:556
 msgid "Edit"
-msgstr "Muokkaa"
+msgstr "Rediger"
 
 #: openplotterI2c.py:180
 msgid "Remove"
-msgstr "Poista"
+msgstr "Fjern"
 
 #: openplotterI2c.py:195 openplotterI2c.py:196
 msgid "pressure"
-msgstr "paine"
+msgstr "trykk"
 
 #: openplotterI2c.py:195 openplotterI2c.py:196
 msgid "temperature"
-msgstr "lämpötila"
+msgstr "temperatur"
 
 #: openplotterI2c.py:195
 msgid "humidity"
-msgstr "kosteus"
+msgstr "luftfuktighet"
 
 #: openplotterI2c.py:250
 msgid "Failed. You must select a sensor."
-msgstr "Epäonnistui. Valitse tunnistin."
+msgstr "Mislyktes. Du må velge en sensor."
 
 #: openplotterI2c.py:255
 msgid "Failed. You must provide an address."
-msgstr "Epäonnistui. Anna osoite."
+msgstr "Mislyktes. Du må oppgi en adresse."
 
 #: openplotterI2c.py:313
 msgid "I2C service is enabled"
-msgstr "I2C palvelu on sallittu"
+msgstr "I2C-tjenesten er aktivert"
 
 #: openplotterI2c.py:316
 msgid "There is nothing to send. I2C service is disabled"
-msgstr "Ei ole mitään lähetettävää. I2C palvelu on lopetettu"
+msgstr "Det er ingenting å sende. I2C-tjenesten er deaktivert"
 
 #: openplotterI2c.py:334
 msgid "Sensor"
-msgstr "Anturi"
+msgstr "Sensor"
 
 #: openplotterI2c.py:335 openplotterI2c.py:623
 msgid "Port"
-msgstr "Portti"
+msgstr "Port"
 
 #: openplotterI2c.py:336
 msgid "SK connection ID"
-msgstr "SK kytkentä ID"
+msgstr "SK tilkoblings-ID"
 
 #: openplotterI2c.py:342
 msgid "Edit Port"
-msgstr "Muokkaa porttia"
+msgstr "Rediger port"
 
 #: openplotterI2c.py:345
 msgid "Add Connection"
-msgstr "Lisää kytkentä"
+msgstr "Legg til Forbindelse"
 
 #: openplotterI2c.py:347
 msgid "Edit connection"
-msgstr "Muokkaa kytkentää"
+msgstr "Rediger forbindelse"
 
 #: openplotterI2c.py:349
 msgid "Remove connection"
-msgstr "Poista kytkentä"
+msgstr "Fjern forbindelse"
 
 #: openplotterI2c.py:411
 msgid "Failed. Error creating connection in Signal K"
-msgstr "Epäonnistui. Virhe kytkettäessä Signal Khon"
+msgstr "Mislyktes. Feil ved opprettelse av tilkobling i Signal K"
 
 #: openplotterI2c.py:413 openplotterI2c.py:439 openplotterI2c.py:451
 msgid "Please install \"Signal K Installer\" OpenPlotter app"
-msgstr "Asenna \"Signal K asennin\" OpenPlotter sovelma"
+msgstr "Vennligst installer \"Signal K Installer\" OpenPlotter app"
 
 #: openplotterI2c.py:432
 msgid "Failed. Error removing connection in Signal K"
-msgstr "Epäonnistui. Virhe kytkennän poistossa Signal Kssa"
+msgstr "Mislyktes. Feil ved fjerning av tilkobling i Signal K"
 
 #: openplotterI2c.py:447
 msgid "Please install \"signalk-to-nmea2000\" Signal K app"
-msgstr "Asenna \"signalk-nmea2000:een\" Signal K sovelma"
+msgstr "Vennligst installer \"signalk-to-nmea2000\" Signal K-applikasjon"
 
 #: openplotterI2c.py:455
 msgid "Restarting Signal K server... "
-msgstr "Käynnistetään Signal K palvelin... "
+msgstr "Starter Signal K-server på nytt... "
 
 #: openplotterI2c.py:461
 msgid "Signal K server restarted"
-msgstr "Signal K palvelin käynnistetty"
+msgstr "Signal K-server startet på nytt"
 
 #: openplotterI2c.py:468
 msgid "Add I2C sensor"
-msgstr "Lisää I2C anturi"
+msgstr "Legg til I2C-sensor"
 
 #: openplotterI2c.py:472
 msgid "detected"
-msgstr "havaittu"
+msgstr "oppdaget"
 
 #: openplotterI2c.py:482
 msgid "add/update sensor"
-msgstr "lisää/päivitä anturi"
+msgstr "legg til/oppdater sensor"
 
 #: openplotterI2c.py:566
 msgid "Rate (seconds)"
-msgstr "Tahti (sekuntia)"
+msgstr "Frekvens (sekunder)"
 
 #: ports.py:33
 msgid "I2C Sensors"
-msgstr "I2C Anturit"
+msgstr "I2C-sensorer"
 
 #: startup.py:39
 msgid "Checking I2C sensors..."
-msgstr "Tarkistetaan I2C anturit..."
+msgstr "Sjekker I2C sensorer..."
 
 #: startup.py:54
 msgid "Your Raspberry Pi is too old."
-msgstr "Raspberry Pi:si on liian vanha."
+msgstr "Din Raspberry Pi er for gammel."
 
 #: startup.py:58
 msgid "I2C enabled"
-msgstr "I2C sallittu"
+msgstr "I2C aktivert"
 
 #: startup.py:61
 msgid "running"
-msgstr "käynnissä"
+msgstr "kjører"
 
 #: startup.py:62
 msgid " | not running"
-msgstr " | ei käynnissä"
+msgstr " kjører ikke"
 
 #: startup.py:64 startup.py:65
 msgid "Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces."
-msgstr "Salli I2C liityntä Valinnat -> Raspberry Pi asetukset -> liitokset kohdassa."
+msgstr "Vennligst aktiver I2C grensesnitt i Innstillinger -> Raspberry Pi konfigurasjon -> Grensesnitt."
 
 #: startup.py:81 startup.py:82
 msgid "There is no Signal K connection for sensor: "
-msgstr "Ei ole mitään Signal K yhteyttä anturille: "
+msgstr "Det er ingen Signal K-tilkobling til sensor: "
 

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
 "POT-Creation-Date: 2020-04-03 13:08+0200\n"
-"PO-Revision-Date: 2020-08-13 19:12+0200\n"
+"PO-Revision-Date: 2020-09-29 18:06\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Language: da\n"
@@ -13,12 +13,12 @@ msgstr ""
 "X-Poedit-Basepath: ../../..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: .\n"
 "X-Crowdin-Project: openplotter\n"
 "X-Crowdin-Project-ID: 289888\n"
 "X-Crowdin-Language: da\n"
 "X-Crowdin-File: openplotter-i2c.po\n"
 "X-Crowdin-File-ID: 15\n"
-"X-Poedit-SearchPath-0: .\n"
 
 #: i2cPostInstall.py:28
 msgid "Adding openplotter-i2c-read service..."
@@ -237,3 +237,4 @@ msgstr "Aktivér venligst I2C-interface i Præferencer -> Raspberry Pi-konfigura
 #: startup.py:81 startup.py:82
 msgid "There is no Signal K connection for sensor: "
 msgstr "Der er ingen signal K-forbindelse til sensoren: "
+

@@ -10,6 +10,6 @@ X-Python3-Version: >= 3.2
 Package: openplotter-i2c
 Architecture: all
 Multi-Arch: foreign
-Depends: ${misc:Depends}, ${python3:Depends}, openplotter-settings, i2c-tools
+Depends: ${misc:Depends}, ${python3:Depends}, openplotter-settings, i2c-tools, python3-rpi.gpio
 Description: OpenPlotter app to manage I2C sensors in Raspberry Pi
  OpenPlotter app to manage I2C sensors in Raspberry Pi

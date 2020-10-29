@@ -25,6 +25,12 @@ def main():
 	currentLanguage = conf2.get('GENERAL', 'lang')
 	language.Language(currentdir,'openplotter-i2c',currentLanguage)
 
+	print(_('Installing python packages...'))
+	try:
+		subprocess.call(['pip3', 'install', 'adafruit-blinka', 'adafruit-circuitpython-ads1x15'])
+		print(_('DONE'))
+	except Exception as e: print(_('FAILED: ')+str(e))
+
 	print(_('Adding openplotter-i2c-read service...'))
 	try:
 		fo = open('/etc/systemd/system/openplotter-i2c-read.service', "w")

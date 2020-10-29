@@ -70,7 +70,6 @@ class Check():
 			except: skdata = {}
 
 			for i in i2c_sensors:
-				print (i)
 				exists = False
 				if 'pipedProviders' in skdata:
 					for ii in skdata['pipedProviders']:

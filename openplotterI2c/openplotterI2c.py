@@ -36,6 +36,11 @@ class MyFrame(wx.Frame):
 		self.currentLanguage = self.conf.get('GENERAL', 'lang')
 		self.language = language.Language(self.currentdir,'openplotter-i2c',self.currentLanguage)
 
+		self.i2c_sensors_def = {}
+		self.i2c_sensors_def['BME280'] = {'magnitudes': [_('pressure'),_('temperature'),_('humidity')], 'SKkeys': ['environment.outside.pressure','','environment.inside.humidity']}
+		self.i2c_sensors_def['MS5607-02BA03'] = {'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure','']}
+		self.i2c_sensors_def['ADS1115'] = {'magnitudes': ['A0','A1','A2','A3'], 'SKkeys': ['','','',''],'sensorSettings':{'gain':'1'}, 'magnitudeSettings':{'range1':'0|32768 -> 0|3.1415926536', 'range2':'32769|65536 -> -3.1415926536|0'}}
+		
 		wx.Frame.__init__(self, None, title='I2C '+version, size=(800,444))
 		self.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		icon = wx.Icon(self.currentdir+"/data/openplotter-i2c.png", wx.BITMAP_TYPE_PNG)
@@ -163,11 +168,14 @@ class MyFrame(wx.Frame):
 		self.listSensors = wx.ListCtrl(self.i2c, -1, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES, size=(-1,200))
 		self.listSensors.InsertColumn(0, ' ', width=16)
 		self.listSensors.InsertColumn(1, _('Name'), width=120)
-		self.listSensors.InsertColumn(2, _('Address'), width=80)
-		self.listSensors.InsertColumn(3, _('Magnitude'), width=120)
+		self.listSensors.InsertColumn(2, _('Address'), width=60)
+		self.listSensors.InsertColumn(3, _('Magnitude'), width=90)
 		self.listSensors.InsertColumn(4, _('Signal K key'), width=220)
-		self.listSensors.InsertColumn(5, _('Rate'), width=50)
+		self.listSensors.InsertColumn(5, _('Rate'), width=40)
 		self.listSensors.InsertColumn(6, _('Offset'), width=50)
+		self.listSensors.InsertColumn(7, _('Raw'), width=40)
+		self.listSensors.InsertColumn(8, _('Sensor Settings'), width=200)
+		self.listSensors.InsertColumn(9, _('Magnitude Settings'), width=200)
 		self.listSensors.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onListSensorsSelected)
 		self.listSensors.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onListSensorsDeselected)
 		self.listSensors.SetTextColour(wx.BLACK)
@@ -175,10 +183,11 @@ class MyFrame(wx.Frame):
 		self.toolbar2 = wx.ToolBar(self.i2c, style=wx.TB_TEXT | wx.TB_VERTICAL)
 		self.addButton = self.toolbar2.AddTool(201, _('Add'), wx.Bitmap(self.currentdir+"/data/i2c.png"))
 		self.Bind(wx.EVT_TOOL, self.OnAddButton, self.addButton)
-		self.editButton = self.toolbar2.AddTool(202, _('Edit'), wx.Bitmap(self.currentdir+"/data/edit.png"))
-		self.Bind(wx.EVT_TOOL, self.OnEditButton, self.editButton)
 		self.removeButton = self.toolbar2.AddTool(203, _('Remove'), wx.Bitmap(self.currentdir+"/data/cancel.png"))
 		self.Bind(wx.EVT_TOOL, self.OnRemoveButton, self.removeButton)
+		self.toolbar2.AddSeparator()
+		self.editButton = self.toolbar2.AddTool(202, _('Edit'), wx.Bitmap(self.currentdir+"/data/edit.png"))
+		self.Bind(wx.EVT_TOOL, self.OnEditButton, self.editButton)
 
 		sizer = wx.BoxSizer(wx.HORIZONTAL)
 		sizer.Add(self.listSensors, 1, wx.EXPAND, 0)
@@ -191,25 +200,36 @@ class MyFrame(wx.Frame):
 		self.onListSensorsDeselected()
 		self.onlistConnectionsDeselected()
 
-		self.i2c_sensors_def = {}
-		self.i2c_sensors_def['BME280'] = {'address': '0x76', 'magnitudes': [_('pressure'),_('temperature'),_('humidity')], 'SKkeys': ['environment.outside.pressure','','environment.inside.humidity']}
-		self.i2c_sensors_def['MS5607-02BA03'] = {'address': '0x77', 'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure','']}
-		
 		data = self.conf.get('I2C', 'sensors')
 		try: self.i2c_sensors = eval(data)
 		except: self.i2c_sensors = {}
 
-		for sensor in self.i2c_sensors:
-			name = sensor
-			address = self.i2c_sensors[sensor]['address']
-			port = self.i2c_sensors[sensor]['port']
+		for name in self.i2c_sensors:
+			if name in self.i2c_sensors_def: sensor = name
+			else:
+				x = name.split('-')
+				sensor = x[0]
+			address = self.i2c_sensors[name]['address']
+			port = self.i2c_sensors[name]['port']
+			magnitudes = []
+			
+			for i in self.i2c_sensors_def:
+				if sensor in i: magnitudes = self.i2c_sensors_def[i]['magnitudes']
 			c = 0
-			for index, magnitude in enumerate(self.i2c_sensors_def[sensor]['magnitudes']):
+			for index, magnitude in enumerate(magnitudes):
 				nameMagnitude = magnitude
-				SKkey = self.i2c_sensors[sensor]['data'][index]['SKkey']
-				rate = self.i2c_sensors[sensor]['data'][index]['rate']
-				offset = self.i2c_sensors[sensor]['data'][index]['offset']
-				self.listSensors.Append([str(c),name, address, nameMagnitude, SKkey, str(rate), str(offset)])
+				SKkey = self.i2c_sensors[name]['data'][index]['SKkey']
+				rate = self.i2c_sensors[name]['data'][index]['rate']
+				offset = self.i2c_sensors[name]['data'][index]['offset']
+				if 'raw' in self.i2c_sensors[name]['data'][index]: raw = self.i2c_sensors[name]['data'][index]['raw']
+				else: raw = False
+				if raw: raw2 = _('yes')
+				else: raw2 = _('no')
+				if 'sensorSettings' in self.i2c_sensors[name]: sensorSettings = self.i2c_sensors[name]['sensorSettings']
+				else: sensorSettings = ''
+				if 'magnitudeSettings' in self.i2c_sensors[name]['data'][index]: magnitudeSettings = self.i2c_sensors[name]['data'][index]['magnitudeSettings']
+				else: magnitudeSettings = ''
+				self.listSensors.Append([str(c),name, address, nameMagnitude, SKkey, str(rate), str(offset), raw2, sensorSettings, magnitudeSettings])
 				c = c + 1
 				if SKkey: self.listSensors.SetItemBackgroundColour(self.listSensors.GetItemCount()-1,(255,215,0))
 			self.listConnections.Append([name, str(port), ''])
@@ -247,22 +267,48 @@ class MyFrame(wx.Frame):
 			return
 		res = dlg.ShowModal()
 		if res == wx.ID_OK:
-			name = str(dlg.sensor_select.GetValue())
-			if not name:
+			sensor = str(dlg.sensorSelect.GetValue())
+			if not sensor:
 				self.ShowStatusBarRED(_('Failed. You must select a sensor.'))
 				dlg.Destroy()
 				return
-			address = dlg.address.GetValue()
+			address = dlg.addressSelect.GetValue()
 			if not address:
 				self.ShowStatusBarRED(_('Failed. You must provide an address.'))
 				dlg.Destroy()
 				return
-			if name in self.i2c_sensors_def:
-				data = []
-				for SKkey in self.i2c_sensors_def[name]['SKkeys']:
-					data.append({'SKkey': SKkey, 'rate': 1.0, 'offset': 0.0})
-				new_sensor = {'address': address, 'port': 51000, 'data': data}
-				self.i2c_sensors[name] = new_sensor
+			for i in self.i2c_sensors:
+				if address == self.i2c_sensors[i]['address']:
+					self.ShowStatusBarRED(_('Failed. This address is already being used.'))
+					dlg.Destroy()
+					return
+			sensorSettings = dlg.settings.GetValue()
+			sensorSettings2 = {}
+			if sensorSettings:
+				x0 = sensorSettings.split('\n')
+				for i in x0:
+					try:
+						x1 = i.split('=')
+						x2 = x1[0].replace(' ','')
+						x3 = x1[1].replace(' ','')
+						sensorSettings2[x2] = x3
+					except: pass
+			name = sensor
+			if name in self.i2c_sensors:
+				c = 1
+				name = sensor+'-'+str(c)
+				while True:
+					if name in self.i2c_sensors:
+						name = sensor+'-'+str(c)
+						c = c + 1
+					else: break
+			magnitudeSettings = ''
+			if 'magnitudeSettings' in self.i2c_sensors_def[sensor]: magnitudeSettings = self.i2c_sensors_def[sensor]['magnitudeSettings']
+			data = []
+			for SKkey in self.i2c_sensors_def[sensor]['SKkeys']:
+				data.append({'SKkey': SKkey, 'rate': 1.0, 'offset': 0.0, 'raw': False, 'magnitudeSettings':magnitudeSettings})
+			new_sensor = {'address': address, 'port': 51000, 'sensorSettings':sensorSettings2, 'data': data}
+			self.i2c_sensors[name] = new_sensor
 			self.OnApply()
 			self.readSensors()
 		dlg.Destroy()
@@ -282,16 +328,33 @@ class MyFrame(wx.Frame):
 		rate = rate.GetText()
 		offset = self.listSensors.GetItem(selected, 6)
 		offset = offset.GetText()
-
-		dlg = editI2c(name,magn,sk,rate,offset)
+		raw = False
+		if 'raw' in self.i2c_sensors[name]['data'][int(index)]:
+			raw = self.i2c_sensors[name]['data'][int(index)]['raw']
+		magnitudeSettings = ''
+		if 'magnitudeSettings' in self.i2c_sensors[name]['data'][int(index)]:
+			magnitudeSettings = self.i2c_sensors[name]['data'][int(index)]['magnitudeSettings']
+		dlg = editI2c(name,magn,sk,rate,offset,raw,magnitudeSettings)
 		res = dlg.ShowModal()
 		if res == wx.ID_OK:
 			sk = str(dlg.SKkey.GetValue())
 			rate = dlg.rate.GetValue()
+			if not rate: rate = 1.0
 			offset = dlg.offset.GetValue()
 			if not offset: offset = 0.0
-			if not rate: rate = 1.0
-			self.i2c_sensors[name]['data'][int(index)] = {'SKkey': sk, 'rate': float(rate), 'offset': float(offset)}
+			raw = dlg.raw.GetValue()
+			magnitudeSettings = dlg.settings.GetValue()
+			magnitudeSettings2 = {}
+			if magnitudeSettings:
+				x0 = magnitudeSettings.split('\n')
+				for i in x0:
+					try:
+						x1 = i.split('=')
+						x2 = x1[0].replace(' ','')
+						x3 = x1[1].lstrip()
+						magnitudeSettings2[x2] = x3
+					except: pass
+			self.i2c_sensors[name]['data'][int(index)] = {'SKkey': sk, 'rate': float(rate), 'offset': float(offset), 'raw': raw, 'magnitudeSettings': magnitudeSettings2}
 			self.OnApply()
 			self.readSensors()
 		dlg.Destroy()
@@ -467,36 +530,61 @@ class MyFrame(wx.Frame):
 class addI2c(wx.Dialog):
 	def __init__(self, i2c_sensors_def):
 
+		self.i2c_sensors_def = i2c_sensors_def
 		title = _('Add I2C sensor')
 
-		wx.Dialog.__init__(self, None, title=title, size=(450,430))
+		wx.Dialog.__init__(self, None, title=title, size=(610,360))
+		self.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		panel = wx.Panel(self)
-		label_detected = wx.StaticText(panel, label=_('detected'))
 
-		self.list_detected = wx.ListCtrl(panel, -1, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
-		self.list_detected.InsertColumn(0, _('Name'), width=330)
-		self.list_detected.InsertColumn(1, _('Address'), width=100)
-		self.list_detected.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onSelectDetected)
-		self.list_detected.SetTextColour(wx.BLACK)
+		sensorLabel = wx.StaticText(panel, label=_('Supported sensors'))
+		listSensors = []
+		for i in self.i2c_sensors_def:
+			listSensors.append(i)
+		self.sensorSelect = wx.ComboBox(panel, choices=listSensors, style=wx.CB_READONLY)
+		self.sensorSelect.Bind(wx.EVT_COMBOBOX, self.onSelectSensor)
+
+		settingsLabel = wx.StaticText(panel, label=_('Settings'))
+		self.settings = wx.TextCtrl(panel, style=wx.TE_MULTILINE)
+
+		addressesLabel = wx.StaticText(panel, label=_('Detected addresses'))
+		listAddresses = []
+		bus = smbus.SMBus(1)
+		for addr in range(3, 178):
+			try:
+				bus.write_quick(addr)
+				addr = hex(addr)
+				listAddresses.append(addr)
+			except IOError: pass
+		self.addressSelect = wx.ComboBox(panel, choices=listAddresses, style=wx.CB_READONLY)
+
+		detectedI2c = rt.RichTextCtrl(panel, style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_DONTWRAP|wx.LC_SORT_ASCENDING)
+		detectedI2c.SetMargins((10,10))
+		try:
+			addresses = subprocess.check_output(['i2cdetect', '-y', '0']).decode(sys.stdin.encoding)
+		except: addresses = subprocess.check_output(['i2cdetect', '-y', '1']).decode(sys.stdin.encoding)
+
+		detectedI2c.WriteText(addresses)
 
 		hline1 = wx.StaticLine(panel)
-
-		label_add = wx.StaticText(panel, label=_('add/update sensor'))
-
-		self.list_sensors = []
-		for i in i2c_sensors_def:
-			self.list_sensors.append(i)
-		self.sensor_select = wx.ComboBox(panel, choices=self.list_sensors, style=wx.CB_READONLY, size = (200,-1))
-		self.sensor_select.Bind(wx.EVT_COMBOBOX, self.onSelectSensor)
-
-		self.address = wx.TextCtrl(panel)
 
 		cancelBtn = wx.Button(panel, wx.ID_CANCEL)
 		okBtn = wx.Button(panel, wx.ID_OK)
 
-		hbox3 = wx.BoxSizer(wx.HORIZONTAL)
-		hbox3.Add(self.sensor_select, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
-		hbox3.Add(self.address, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
+		vbox1 = wx.BoxSizer(wx.VERTICAL)
+		vbox1.Add(sensorLabel, 0, wx.ALL | wx.EXPAND, 5)
+		vbox1.Add(self.sensorSelect, 0, wx.ALL | wx.EXPAND, 5)
+		vbox1.Add(settingsLabel, 0, wx.ALL | wx.EXPAND, 5)
+		vbox1.Add(self.settings, 1, wx.ALL | wx.EXPAND, 5)
+
+		vbox2 = wx.BoxSizer(wx.VERTICAL)
+		vbox2.Add(addressesLabel, 0, wx.ALL | wx.EXPAND, 5)
+		vbox2.Add(self.addressSelect, 0, wx.ALL | wx.EXPAND, 5)
+		vbox2.Add(detectedI2c, 1, wx.ALL | wx.EXPAND, 5)
+
+		hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+		hbox1.Add(vbox1, 1, wx.EXPAND, 0)
+		hbox1.Add(vbox2, 1, wx.EXPAND, 0)
 
 		hbox = wx.BoxSizer(wx.HORIZONTAL)
 		hbox.AddStretchSpacer(1)
@@ -504,51 +592,36 @@ class addI2c(wx.Dialog):
 		hbox.Add(okBtn, 0, wx.ALL | wx.EXPAND, 5)
 
 		vbox = wx.BoxSizer(wx.VERTICAL)
+		vbox.Add(hbox1, 1, wx.EXPAND, 0)
 		vbox.AddSpacer(5)
-		vbox.Add(label_detected, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 10)
-		vbox.Add(self.list_detected, 1, wx.RIGHT | wx.LEFT | wx.EXPAND, 10)
-		vbox.AddSpacer(10)
-		vbox.Add(label_add, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 10)
-		vbox.Add(hbox3, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
-		vbox.AddStretchSpacer(1)
-		vbox.Add(hline1, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
+		vbox.Add(hline1, 0, wx.EXPAND, 0)
 		vbox.Add(hbox, 0, wx.ALL  | wx.EXPAND, 5)
 
 		panel.SetSizer(vbox)
 		self.panel = panel
 
-		self.detection()
 		self.Centre() 
 
-	def onSelectDetected(self, e):
-		selectedDetected = self.list_detected.GetFirstSelected()
-		name = self.list_detected.GetItem(selectedDetected, 0)
-		address = self.list_detected.GetItem(selectedDetected, 1)
-		self.sensor_select.SetValue(name.GetText())
-		if name.GetText() in self.list_sensors: self.address.SetValue(address.GetText())
-
-	def onSelectSensor(self, e):
-		self.address.SetValue('')
-
-	def detection(self):
-		self.list_detected.DeleteAllItems()
-		bus = smbus.SMBus(1)
-		for addr in range(3, 178):
-			try:
-				bus.write_quick(addr)
-				addr = hex(addr)
-				if addr == '0x76': self.list_detected.Append(['BME280', addr])
-				if addr == '0x77': self.list_detected.Append(['MS5607-02BA03', addr])
-			except IOError: pass
+	def onSelectSensor(self,e):
+		if 'sensorSettings' in self.i2c_sensors_def[self.sensorSelect.GetValue()]:
+			sensorSettings = self.i2c_sensors_def[self.sensorSelect.GetValue()]['sensorSettings']
+			if sensorSettings:
+				settings2 = ''
+				for i in sensorSettings:
+					settings2 += i+' = '+str(sensorSettings[i])+'\n'
+				self.settings.SetValue(settings2)
+			else: self.settings.SetValue('')
+		else: self.settings.SetValue('')
 
 ################################################################################
 
 class editI2c(wx.Dialog):
-	def __init__(self,name,magn,sk,rate,offset):
+	def __init__(self,name,magn,sk,rate,offset,raw,magnitudeSettings):
 		self.platform = platform.Platform()
 		title = _('Edit')+(' '+name+' - '+magn)
 
-		wx.Dialog.__init__(self, None, title=title, size=(500, 250))
+		wx.Dialog.__init__(self, None, title=title, size=(500, 350))
+		self.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		panel = wx.Panel(self)
 
 		titl = wx.StaticText(panel, label=_('Signal K key'))
@@ -562,7 +635,8 @@ class editI2c(wx.Dialog):
 			self.SKkey.Disable()
 			self.edit_skkey.Disable()
 
-		hline1 = wx.StaticLine(panel)
+		self.raw = wx.CheckBox(panel, label=_('Add raw values'))
+		if raw: self.raw.SetValue(True)
 
 		self.rate_list = ['0.1', '0.25', '0.5', '0.75', '1.0', '5.0', '30.0', '60.0', '300.0']
 		self.rate_label = wx.StaticText(panel, label=_('Rate (seconds)'))
@@ -573,6 +647,14 @@ class editI2c(wx.Dialog):
 		self.offset = wx.TextCtrl(panel)
 		self.offset.SetValue(offset)
 
+		self.settingsLabel = wx.StaticText(panel, label=_('Settings'))
+		self.settings = wx.TextCtrl(panel, style=wx.TE_MULTILINE)
+		if magnitudeSettings:
+			settings2 = ''
+			for i in magnitudeSettings:
+				settings2 += i+' = '+str(magnitudeSettings[i])+'\n'
+			self.settings.SetValue(settings2)
+		else: self.settings.SetValue('')
 		cancelBtn = wx.Button(panel, wx.ID_CANCEL)
 		okBtn = wx.Button(panel, wx.ID_OK)
 
@@ -580,13 +662,21 @@ class editI2c(wx.Dialog):
 		hbox2.Add(self.SKkey, 1, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
 		hbox2.Add(self.edit_skkey, 0, wx.RIGHT | wx.EXPAND, 5)
 
-		hbox3 = wx.BoxSizer(wx.HORIZONTAL)
-		hbox3.Add(self.rate_label, 0, wx.ALL | wx.EXPAND, 5)
-		hbox3.Add(self.rate, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
+		vbox1 = wx.BoxSizer(wx.VERTICAL)
+		vbox1.Add(self.rate_label, 0, wx.ALL | wx.EXPAND, 5)
+		vbox1.Add(self.rate, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
+		vbox1.AddSpacer(10)
+		vbox1.Add(self.offset_label, 0, wx.ALL| wx.EXPAND, 5)
+		vbox1.Add(self.offset, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
 
-		hbox4 = wx.BoxSizer(wx.HORIZONTAL)
-		hbox4.Add(self.offset_label, 0, wx.ALL| wx.EXPAND, 5)
-		hbox4.Add(self.offset, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
+		vbox2 = wx.BoxSizer(wx.VERTICAL)
+		vbox2.Add(self.settingsLabel, 0, wx.ALL | wx.EXPAND, 5)
+		vbox2.Add(self.settings, 1, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)	
+
+		hbox5 = wx.BoxSizer(wx.HORIZONTAL)
+		hbox5.Add(vbox1, 0, wx.EXPAND, 0)
+		hbox5.AddSpacer(5)
+		hbox5.Add(vbox2, 1, wx.EXPAND, 0)
 
 		hbox = wx.BoxSizer(wx.HORIZONTAL)
 		hbox.AddStretchSpacer(1)
@@ -596,13 +686,13 @@ class editI2c(wx.Dialog):
 		vbox = wx.BoxSizer(wx.VERTICAL)
 		vbox.AddSpacer(5)
 		vbox.Add(titl, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 10)
+		vbox.AddSpacer(5)
 		vbox.Add(hbox2, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
+		vbox.AddSpacer(5)
+		vbox.Add(self.raw, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
 		vbox.AddSpacer(10)
-		vbox.Add(hbox3, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
-		vbox.AddSpacer(10)
-		vbox.Add(hbox4, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
-		vbox.AddStretchSpacer(1)
-		vbox.Add(hline1, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
+		vbox.Add(hbox5, 1, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
+		vbox.AddSpacer(5)
 		vbox.Add(hbox, 0, wx.ALL | wx.EXPAND, 10)
 
 		panel.SetSizer(vbox)

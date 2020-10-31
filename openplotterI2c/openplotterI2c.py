@@ -66,11 +66,6 @@ class MyFrame(wx.Frame):
 		self.toolbar1.AddSeparator()
 		self.refreshButton = self.toolbar1.AddTool(104, _('Refresh'), wx.Bitmap(self.currentdir+"/data/refresh.png"))
 		self.Bind(wx.EVT_TOOL, self.OnRefreshButton, self.refreshButton)
-		self.toolbar1.AddSeparator()
-		skTo0183 = self.toolbar1.AddTool(105, 'SK → NMEA 0183', wx.Bitmap(self.currentdir+"/data/sk.png"))
-		self.Bind(wx.EVT_TOOL, self.OnSkTo0183, skTo0183)
-		skTo2000 = self.toolbar1.AddTool(106, 'SK → NMEA 2000', wx.Bitmap(self.currentdir+"/data/sk.png"))
-		self.Bind(wx.EVT_TOOL, self.OnSkTo2000, skTo2000)
 
 		self.notebook = wx.Notebook(self)
 		self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onTabChange)
@@ -499,26 +494,6 @@ class MyFrame(wx.Frame):
 			self.restart_SK(0)
 			self.readSensors()
 		else: self.ShowStatusBarRED(_('Failed. Error removing connection in Signal K'))
-
-	def OnSkTo0183(self,e):
-		if self.platform.skPort: 
-			url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/plugins/sk-to-nmea0183'
-			webbrowser.open(url, new=2)
-		else: 
-			self.ShowStatusBarRED(_('Please install "Signal K Installer" OpenPlotter app'))
-			self.OnToolSettings()
-
-	def OnSkTo2000(self,e):
-		if self.platform.skPort: 
-			if self.platform.isSKpluginInstalled('signalk-to-nmea2000'):
-				url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/serverConfiguration/plugins/sk-to-nmea2000'
-			else: 
-				self.ShowStatusBarRED(_('Please install "signalk-to-nmea2000" Signal K app'))
-				url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/appstore/apps'
-			webbrowser.open(url, new=2)
-		else: 
-			self.ShowStatusBarRED(_('Please install "Signal K Installer" OpenPlotter app'))
-			self.OnToolSettings()
 
 	def restart_SK(self, msg):
 		if msg == 0: msg = _('Restarting Signal K server... ')

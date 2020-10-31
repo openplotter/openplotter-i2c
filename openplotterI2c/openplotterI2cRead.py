@@ -244,6 +244,73 @@ def work_ADS1115(name,data):
 					tick1 = time.time()
 			except Exception as e: print ("ADS1115 reading failed: "+str(e))
 
+def work_HTU21D(name,data):
+
+	def getPaths(value,value2,key,offset,raw):
+		Erg = ''
+		if value2:
+			try:
+				value3 = float(value2)
+				Erg += '{"path": "'+key+'","value":'+str(offset+value3)+'},'
+			except: Erg += '{"path": "'+key+'","value":"'+str(value2)+'"},'
+		else: Erg += '{"path": "'+key+'","value": null},'
+		if raw and value:
+			try:
+				value4 = float(value)
+				Erg += '{"path": "'+key+'.raw","value":'+str(value4)+'},'
+			except: Erg += '{"path": "'+key+'.raw","value":"'+str(value)+'"},'
+		return Erg
+
+	humidityKey = data['data'][0]['SKkey']
+	temperatureKey = data['data'][1]['SKkey']
+
+	if humidityKey or temperatureKey:
+		from adafruit_htu21d import HTU21D
+
+		address = data['address']
+		i2c = busio.I2C(board.SCL, board.SDA)
+		sensor = HTU21D(i2c, address=int(address, 16))
+
+		if humidityKey: 
+			humidityRaw = data['data'][0]['raw']
+			humidityRate = data['data'][0]['rate']
+			humidityOffset = data['data'][0]['offset']
+		if temperatureKey: 
+			temperatureRaw = data['data'][1]['raw']
+			temperatureRate = data['data'][1]['rate']
+			temperatureOffset = data['data'][1]['offset']
+
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		port = data['port']
+		tick1 = time.time()
+		tick2 = time.time()
+		while True:
+			time.sleep(0.1)
+			try:
+				Erg=''
+				if humidityKey:
+					tick0 = time.time()
+					if tick0 - tick1 > humidityRate:
+						try: humidityValue = round(sensor.relative_humidity,1)
+						except: humidityValue = sensor.relative_humidity
+						humidityValue2 = humidityValue
+						Erg += getPaths(humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
+						tick1 = time.time()
+				if temperatureKey:
+					tick0 = time.time()
+					if tick0 - tick2 > temperatureRate:
+						try: temperatureValue = round(sensor.temperature,1)
+						except: temperatureValue = sensor.temperature
+						try:temperatureValue2 = float(temperatureValue)+273.15
+						except: temperatureValue2 = ''
+						Erg += getPaths(temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+						tick2 = time.time()
+				if Erg:		
+					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
+					SignalK+=Erg[0:-1]+']}]}\n'		
+					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
+			except Exception as e: print ("HTU21D reading failed: "+str(e))
+
 def main():
 	conf2 = conf.Conf()
 	active = False
@@ -263,6 +330,10 @@ def main():
 			elif 'ADS1115' in i:
 				x3 = threading.Thread(target=work_ADS1115, args=(i,i2c_sensors[i]), daemon=True)
 				x3.start()
+				active = True
+			elif 'HTU21D' in i:
+				x4 = threading.Thread(target=work_HTU21D, args=(i,i2c_sensors[i]), daemon=True)
+				x4.start()
 				active = True
 		while active:
 			time.sleep(0.1)

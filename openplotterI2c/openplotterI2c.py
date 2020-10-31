@@ -37,7 +37,8 @@ class MyFrame(wx.Frame):
 		self.language = language.Language(self.currentdir,'openplotter-i2c',self.currentLanguage)
 
 		self.i2c_sensors_def = {}
-		self.i2c_sensors_def['BME280'] = {'magnitudes': [_('pressure'),_('temperature'),_('humidity')], 'SKkeys': ['environment.outside.pressure','','environment.inside.humidity']}
+		self.i2c_sensors_def['BME280'] = {'magnitudes': [_('pressure'),_('temperature'),_('humidity')], 'SKkeys': ['environment.outside.pressure','','environment.inside.relativeHumidity']}
+		self.i2c_sensors_def['HTU21D'] = {'magnitudes': [_('humidity'),_('temperature')], 'SKkeys': ['environment.inside.relativeHumidity','']}
 		self.i2c_sensors_def['MS5607-02BA03'] = {'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure','']}
 		self.i2c_sensors_def['ADS1115'] = {'magnitudes': ['A0','A1','A2','A3'], 'SKkeys': ['','','',''],'sensorSettings':{'gain':'1'}, 'magnitudeSettings':{'range1':'0|13150 -> 0.0872664626|3.1415926536', 'range2':'13151|26300 -> -3.1415926536|-0.0872664626'}}
 		

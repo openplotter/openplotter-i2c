@@ -17,52 +17,89 @@
 
 import socket, time, threading, board, busio
 from openplotterSettings import conf
-from .bme280 import Bme280
 from .ms5607 import Ms5607
 
-def work_bme280(bme280,data):
-	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	name = bme280
-	port = data['port']
-	address = address = data['address']
-	pressureSK = data['data'][0]['SKkey']
-	pressureRate = data['data'][0]['rate']
-	pressureOffset = data['data'][0]['offset']
-	temperatureSK = data['data'][1]['SKkey']
-	temperatureRate = data['data'][1]['rate']
-	temperatureOffset = data['data'][1]['offset']
-	humiditySK = data['data'][2]['SKkey']
-	humidityRate = data['data'][2]['rate']
-	humidityOffset = data['data'][2]['offset']
-	bme = None
-	tick1 = time.time()
-	tick2 = tick1
-	tick3 = tick1
-	while True:
-		time.sleep(0.1)
-		try:
-			if not bme:
-				bme = Bme280(address)
-			temperature,pressure,humidity = bme.readBME280All()
-			tick0 = time.time()
-			Erg=''
-			if pressureSK and pressure:
-				if tick0 - tick1 > pressureRate:
-					Erg += '{"path": "'+pressureSK+'","value":'+str(pressureOffset+(pressure*100))+'},'
-					tick1 = tick0
-			if temperatureSK and temperature:
-				if tick0 - tick2 > temperatureRate:
-					Erg += '{"path": "'+temperatureSK+'","value":'+str(temperatureOffset+(temperature+273.15))+'},'
-					tick2 = tick0
-			if humiditySK and humidity:
-				if tick0 - tick3 > humidityRate:
-					Erg += '{"path": "'+humiditySK+'","value":'+str(humidityOffset+(humidity))+'},'
-					tick3 = tick0
-			if Erg:		
-				SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
-				SignalK+=Erg[0:-1]+']}]}\n'		
-				sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
-		except Exception as e: print ("BME280 reading failed: "+str(e))
+def work_BME280(name,data):
+
+	def getPaths(value,value2,key,offset,raw):
+		Erg = ''
+		if value2:
+			try:
+				value3 = float(value2)
+				Erg += '{"path": "'+key+'","value":'+str(offset+value3)+'},'
+			except: Erg += '{"path": "'+key+'","value":"'+str(value2)+'"},'
+		else: Erg += '{"path": "'+key+'","value": null},'
+		if raw and value:
+			try:
+				value4 = float(value)
+				Erg += '{"path": "'+key+'.raw","value":'+str(value4)+'},'
+			except: Erg += '{"path": "'+key+'.raw","value":"'+str(value)+'"},'
+		return Erg
+
+	pressureKey = data['data'][0]['SKkey']
+	temperatureKey = data['data'][1]['SKkey']
+	humidityKey = data['data'][2]['SKkey']
+
+	if pressureKey or temperatureKey or humidityKey:
+		import adafruit_bme280
+
+		address = data['address']
+		i2c = busio.I2C(board.SCL, board.SDA)
+		sensor = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=int(address, 16))
+
+		if pressureKey: 
+			pressureRaw = data['data'][0]['raw']
+			pressureRate = data['data'][0]['rate']
+			pressureOffset = data['data'][0]['offset']
+		if temperatureKey: 
+			temperatureRaw = data['data'][1]['raw']
+			temperatureRate = data['data'][1]['rate']
+			temperatureOffset = data['data'][1]['offset']
+		if humidityKey: 
+			humidityRaw = data['data'][2]['raw']
+			humidityRate = data['data'][2]['rate']
+			humidityOffset = data['data'][2]['offset']
+
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		port = data['port']
+		tick1 = time.time()
+		tick2 = tick1
+		tick3 = tick1
+		while True:
+			time.sleep(0.1)
+			try:
+				Erg=''
+				if pressureKey:
+					tick0 = time.time()
+					if tick0 - tick1 > pressureRate:
+						try: pressureValue = round(sensor.pressure,2)
+						except: pressureValue = sensor.pressure
+						try: pressureValue2 = float(pressureValue)*100
+						except: pressureValue2 = ''
+						Erg += getPaths(pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+						tick1 = time.time()
+				if temperatureKey:
+					tick0 = time.time()
+					if tick0 - tick2 > temperatureRate:
+						try: temperatureValue = round(sensor.temperature,1)
+						except: temperatureValue = sensor.temperature
+						try: temperatureValue2 = float(temperatureValue)+273.15
+						except: temperatureValue2 = ''
+						Erg += getPaths(temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+						tick2 = time.time()
+				if humidityKey:
+					tick0 = time.time()
+					if tick0 - tick3 > humidityRate:
+						try: humidityValue = round(sensor.humidity,1)
+						except: humidityValue = sensor.humidity
+						humidityValue2 = humidityValue
+						Erg += getPaths(humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
+						tick3 = time.time()
+				if Erg:		
+					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
+					SignalK+=Erg[0:-1]+']}]}\n'		
+					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
+			except Exception as e: print ("BME280 reading failed: "+str(e))
 
 def work_MS5607(MS5607,data):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -394,7 +431,7 @@ def main():
 	if i2c_sensors:
 		for i in i2c_sensors:
 			if 'BME280' in i:
-				x1 = threading.Thread(target=work_bme280, args=(i,i2c_sensors[i]), daemon=True)
+				x1 = threading.Thread(target=work_BME280, args=(i,i2c_sensors[i]), daemon=True)
 				x1.start()
 				active = True
 			elif 'MS5607-02BA03' in i:

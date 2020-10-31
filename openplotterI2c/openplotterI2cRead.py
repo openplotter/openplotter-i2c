@@ -209,6 +209,9 @@ def work_ADS1115(name,data):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		port = data['port']
 		tick1 = time.time()
+		tick2 = tick1
+		tick3 = tick1
+		tick4 = tick1
 		while True:
 			time.sleep(0.1)
 			try:
@@ -219,29 +222,32 @@ def work_ADS1115(name,data):
 						A0value = A0chan.value
 						A0voltage = A0chan.voltage
 						Erg += getPaths(A0Ranges,A0value,A0voltage,A0key,A0offset,A0raw)
+						tick1 = time.time()
 				if A1key:
 					tick0 = time.time()
-					if tick0 - tick1 > A1rate:
+					if tick0 - tick2 > A1rate:
 						A1value = A1chan.value
 						A1voltage = A1chan.voltage
 						Erg += getPaths(A1Ranges,A1value,A1voltage,A1key,A1offset,A1raw)
+						tick2 = time.time()
 				if A2key:
 					tick0 = time.time()
-					if tick0 - tick1 > A2rate:
+					if tick0 - tick3 > A2rate:
 						A2value = A2chan.value
 						A2voltage = A2chan.voltage
 						Erg += getPaths(A2Ranges,A2value,A2voltage,A2key,A2offset,A2raw)
+						tick3 = time.time()
 				if A3key:
 					tick0 = time.time()
-					if tick0 - tick1 > A3rate:
+					if tick0 - tick4 > A3rate:
 						A3value = A3chan.value
 						A3voltage = A3chan.voltage
 						Erg += getPaths(A3Ranges,A3value,A3voltage,A3key,A3offset,A3raw)
+						tick4 = time.time()
 				if Erg:		
 					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
 					SignalK+=Erg[0:-1]+']}]}\n'		
 					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
-					tick1 = time.time()
 			except Exception as e: print ("ADS1115 reading failed: "+str(e))
 
 def work_HTU21D(name,data):
@@ -283,7 +289,7 @@ def work_HTU21D(name,data):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		port = data['port']
 		tick1 = time.time()
-		tick2 = time.time()
+		tick2 = tick1
 		while True:
 			time.sleep(0.1)
 			try:

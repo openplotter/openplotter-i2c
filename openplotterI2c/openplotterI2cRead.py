@@ -92,7 +92,8 @@ def work_BME280(name,data):
 					if tick0 - tick3 > humidityRate:
 						try: humidityValue = round(sensor.humidity,1)
 						except: humidityValue = sensor.humidity
-						humidityValue2 = humidityValue
+						try: humidityValue2 = float(humidityValue)
+						except: humidityValue2 = ''
 						Erg += getPaths(humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
 						tick3 = time.time()
 				if Erg:		
@@ -505,6 +506,89 @@ def work_BMP3XX(name,data):
 					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
 			except Exception as e: print ("BMP3XX reading failed: "+str(e))
 
+def work_INA260(name,data):
+
+	def getPaths(value,value2,key,offset,raw):
+		Erg = ''
+		if value2:
+			try:
+				value3 = float(value2)
+				Erg += '{"path": "'+key+'","value":'+str(offset+value3)+'},'
+			except: Erg += '{"path": "'+key+'","value":"'+str(value2)+'"},'
+		else: Erg += '{"path": "'+key+'","value": null},'
+		if raw and value:
+			try:
+				value4 = float(value)
+				Erg += '{"path": "'+key+'.raw","value":'+str(value4)+'},'
+			except: Erg += '{"path": "'+key+'.raw","value":"'+str(value)+'"},'
+		return Erg
+
+	voltageKey = data['data'][0]['SKkey']
+	currentKey = data['data'][1]['SKkey']
+	powerKey = data['data'][2]['SKkey']
+
+	if voltageKey or currentKey or powerKey:
+		import adafruit_ina260
+
+		address = data['address']
+		i2c = busio.I2C(board.SCL, board.SDA)
+		sensor = aadafruit_ina260.INA260(i2c, address=int(address, 16))
+
+		if voltageKey: 
+			voltageRaw = data['data'][0]['raw']
+			voltageRate = data['data'][0]['rate']
+			voltageOffset = data['data'][0]['offset']
+		if currentKey: 
+			currentRaw = data['data'][1]['raw']
+			currentRate = data['data'][1]['rate']
+			currentOffset = data['data'][1]['offset']
+		if powerKey: 
+			powerRaw = data['data'][2]['raw']
+			powerRate = data['data'][2]['rate']
+			powerOffset = data['data'][2]['offset']
+
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		port = data['port']
+		tick1 = time.time()
+		tick2 = tick1
+		tick3 = tick1
+		while True:
+			time.sleep(0.1)
+			try:
+				Erg=''
+				if voltageKey:
+					tick0 = time.time()
+					if tick0 - tick1 > voltageRate:
+						try: voltageValue = round(sensor.voltage,4)
+						except: voltageValue = sensor.voltage
+						try: voltageValue2 = float(voltageValue)
+						except: voltageValue2 = ''
+						Erg += getPaths(voltageValue,voltageValue2,voltageKey,voltageOffset,voltageRaw)
+						tick1 = time.time()
+				if currentKey:
+					tick0 = time.time()
+					if tick0 - tick2 > currentRate:
+						try: currentValue = round(sensor.current,2)
+						except: currentValue = sensor.current
+						try: currentValue2 = float(currentValue)/1000
+						except: currentValue2 = ''
+						Erg += getPaths(currentValue,currentValue2,currentKey,currentOffset,currentRaw)
+						tick2 = time.time()
+				if powerKey:
+					tick0 = time.time()
+					if tick0 - tick3 > powerRate:
+						try: powerValue = round(sensor.power,2)
+						except: powerValue = sensor.power
+						try: powerValue2 = float(powerValue)/1000
+						except: powerValue2 = ''
+						Erg += getPaths(powerValue,powerValue2,powerKey,powerOffset,powerRaw)
+						tick3 = time.time()
+				if Erg:		
+					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
+					SignalK+=Erg[0:-1]+']}]}\n'		
+					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
+			except Exception as e: print ("INA260 reading failed: "+str(e))
+
 def main():
 	conf2 = conf.Conf()
 	active = False
@@ -536,6 +620,10 @@ def main():
 			elif 'BMP3XX' in i:
 				x6 = threading.Thread(target=work_BMP3XX, args=(i,i2c_sensors[i]), daemon=True)
 				x6.start()
+				active = True
+			elif 'INA260' in i:
+				x7 = threading.Thread(target=work_INA260, args=(i,i2c_sensors[i]), daemon=True)
+				x7.start()
 				active = True
 		while active:
 			time.sleep(0.1)

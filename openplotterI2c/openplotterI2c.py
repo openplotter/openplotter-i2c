@@ -37,12 +37,13 @@ class MyFrame(wx.Frame):
 		self.language = language.Language(self.currentdir,'openplotter-i2c',self.currentLanguage)
 
 		self.i2c_sensors_def = {}
+		self.i2c_sensors_def['ADS1115'] = {'magnitudes': ['A0','A1','A2','A3'], 'SKkeys': ['','','',''],'sensorSettings':{'gain':'1'}, 'magnitudeSettings':{'range1':'0|13150 -> 0.0872664626|3.1415926536', 'range2':'13151|26300 -> -3.1415926536|-0.0872664626'}}
 		self.i2c_sensors_def['BME280'] = {'magnitudes': [_('pressure'),_('temperature'),_('humidity')], 'SKkeys': ['environment.outside.pressure','','environment.inside.relativeHumidity']}
 		self.i2c_sensors_def['BMP280'] = {'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure','']}
 		self.i2c_sensors_def['BMP3XX'] = {'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure',''], 'sensorSettings': {'pressure_oversampling':'8', 'temperature_oversampling':'2'}}
 		self.i2c_sensors_def['HTU21D'] = {'magnitudes': [_('humidity'),_('temperature')], 'SKkeys': ['environment.inside.relativeHumidity','']}
 		self.i2c_sensors_def['MS5607-02BA03'] = {'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure','']}
-		self.i2c_sensors_def['ADS1115'] = {'magnitudes': ['A0','A1','A2','A3'], 'SKkeys': ['','','',''],'sensorSettings':{'gain':'1'}, 'magnitudeSettings':{'range1':'0|13150 -> 0.0872664626|3.1415926536', 'range2':'13151|26300 -> -3.1415926536|-0.0872664626'}}
+		self.i2c_sensors_def['INA260'] = {'magnitudes': [_('voltage'),_('current'),_('power')], 'SKkeys': ['','','']}
 		
 		wx.Frame.__init__(self, None, title='I2C '+version, size=(800,444))
 		self.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))

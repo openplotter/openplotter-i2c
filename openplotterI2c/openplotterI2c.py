@@ -39,7 +39,7 @@ class MyFrame(wx.Frame):
 		self.i2c_sensors_def = {}
 		self.i2c_sensors_def['BME280'] = {'magnitudes': [_('pressure'),_('temperature'),_('humidity')], 'SKkeys': ['environment.outside.pressure','','environment.inside.humidity']}
 		self.i2c_sensors_def['MS5607-02BA03'] = {'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure','']}
-		self.i2c_sensors_def['ADS1115'] = {'magnitudes': ['A0','A1','A2','A3'], 'SKkeys': ['','','',''],'sensorSettings':{'gain':'1'}, 'magnitudeSettings':{'range1':'0|32768 -> 0|3.1415926536', 'range2':'32769|65536 -> -3.1415926536|0'}}
+		self.i2c_sensors_def['ADS1115'] = {'magnitudes': ['A0','A1','A2','A3'], 'SKkeys': ['','','',''],'sensorSettings':{'gain':'1'}, 'magnitudeSettings':{'range1':'0|13150 -> 0.0872664626|3.1415926536', 'range2':'13151|26300 -> -3.1415926536|-0.0872664626'}}
 		
 		wx.Frame.__init__(self, None, title='I2C '+version, size=(800,444))
 		self.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
@@ -545,7 +545,7 @@ class addI2c(wx.Dialog):
 		self.sensorSelect.Bind(wx.EVT_COMBOBOX, self.onSelectSensor)
 
 		settingsLabel = wx.StaticText(panel, label=_('Settings'))
-		self.settings = wx.TextCtrl(panel, style=wx.TE_MULTILINE)
+		self.settings = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.HSCROLL)
 
 		addressesLabel = wx.StaticText(panel, label=_('Detected addresses'))
 		listAddresses = []
@@ -648,7 +648,7 @@ class editI2c(wx.Dialog):
 		self.offset.SetValue(offset)
 
 		self.settingsLabel = wx.StaticText(panel, label=_('Settings'))
-		self.settings = wx.TextCtrl(panel, style=wx.TE_MULTILINE)
+		self.settings = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.HSCROLL)
 		if magnitudeSettings:
 			settings2 = ''
 			for i in magnitudeSettings:

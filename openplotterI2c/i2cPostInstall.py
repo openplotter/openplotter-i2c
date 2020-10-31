@@ -27,7 +27,7 @@ def main():
 
 	print(_('Installing python packages...'))
 	try:
-		subprocess.call(['pip3', 'install', 'adafruit-blinka', 'adafruit-circuitpython-ads1x15', 'adafruit-circuitpython-htu21d'])
+		subprocess.call(['pip3', 'install', 'adafruit-blinka', 'adafruit-circuitpython-ads1x15', 'adafruit-circuitpython-htu21d', 'adafruit-circuitpython-bmp280'])
 		print(_('DONE'))
 	except Exception as e: print(_('FAILED: ')+str(e))
 

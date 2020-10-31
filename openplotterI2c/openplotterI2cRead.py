@@ -317,6 +317,74 @@ def work_HTU21D(name,data):
 					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
 			except Exception as e: print ("HTU21D reading failed: "+str(e))
 
+def work_BMP280(name,data):
+
+	def getPaths(value,value2,key,offset,raw):
+		Erg = ''
+		if value2:
+			try:
+				value3 = float(value2)
+				Erg += '{"path": "'+key+'","value":'+str(offset+value3)+'},'
+			except: Erg += '{"path": "'+key+'","value":"'+str(value2)+'"},'
+		else: Erg += '{"path": "'+key+'","value": null},'
+		if raw and value:
+			try:
+				value4 = float(value)
+				Erg += '{"path": "'+key+'.raw","value":'+str(value4)+'},'
+			except: Erg += '{"path": "'+key+'.raw","value":"'+str(value)+'"},'
+		return Erg
+
+	pressureKey = data['data'][0]['SKkey']
+	temperatureKey = data['data'][1]['SKkey']
+
+	if pressureKey or temperatureKey:
+		import adafruit_bmp280
+
+		address = data['address']
+		i2c = busio.I2C(board.SCL, board.SDA)
+		sensor = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, address=int(address, 16))
+
+		if pressureKey: 
+			pressureRaw = data['data'][0]['raw']
+			pressureRate = data['data'][0]['rate']
+			pressureOffset = data['data'][0]['offset']
+		if temperatureKey: 
+			temperatureRaw = data['data'][1]['raw']
+			temperatureRate = data['data'][1]['rate']
+			temperatureOffset = data['data'][1]['offset']
+
+		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		port = data['port']
+		tick1 = time.time()
+		tick2 = tick1
+		while True:
+			time.sleep(0.1)
+			try:
+				Erg=''
+				if pressureKey:
+					tick0 = time.time()
+					if tick0 - tick1 > pressureRate:
+						try: pressureValue = round(sensor.pressure,2)
+						except: pressureValue = sensor.pressure
+						try: pressureValue2 = float(pressureValue)*100
+						except: pressureValue2 = ''
+						Erg += getPaths(pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+						tick1 = time.time()
+				if temperatureKey:
+					tick0 = time.time()
+					if tick0 - tick2 > temperatureRate:
+						try: temperatureValue = round(sensor.temperature,1)
+						except: temperatureValue = sensor.temperature
+						try: temperatureValue2 = float(temperatureValue)+273.15
+						except: temperatureValue2 = ''
+						Erg += getPaths(temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+						tick2 = time.time()
+				if Erg:		
+					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
+					SignalK+=Erg[0:-1]+']}]}\n'		
+					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
+			except Exception as e: print ("BMP280 reading failed: "+str(e))
+
 def main():
 	conf2 = conf.Conf()
 	active = False
@@ -340,6 +408,10 @@ def main():
 			elif 'HTU21D' in i:
 				x4 = threading.Thread(target=work_HTU21D, args=(i,i2c_sensors[i]), daemon=True)
 				x4.start()
+				active = True
+			elif 'BMP280' in i:
+				x5 = threading.Thread(target=work_BMP280, args=(i,i2c_sensors[i]), daemon=True)
+				x5.start()
 				active = True
 		while active:
 			time.sleep(0.1)

@@ -202,7 +202,7 @@ def work_ADS1115(name,data):
 		if 'sensorSettings' in data:
 			if 'gain' in data['sensorSettings']:
 				try: 
-					gain = int(data['sensorSettings']['gain'])
+					gain = eval(data['sensorSettings']['gain'])
 				except: pass
 		i2c = busio.I2C(board.SCL, board.SDA)
 		ads = ADS.ADS1115(i2c, address=int(address, 16), gain=gain)

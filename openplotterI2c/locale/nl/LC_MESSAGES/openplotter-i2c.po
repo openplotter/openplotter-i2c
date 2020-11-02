@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
-"POT-Creation-Date: 2020-04-03 13:08+0200\n"
-"PO-Revision-Date: 2020-08-07 16:44\n"
+"POT-Creation-Date: 2020-11-01 18:15+0100\n"
+"PO-Revision-Date: 2020-11-02 17:54+0100\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Language: nl\n"
@@ -13,28 +13,32 @@ msgstr ""
 "X-Poedit-Basepath: ../../..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-SearchPath-0: .\n"
 "X-Crowdin-Project: openplotter\n"
 "X-Crowdin-Project-ID: 289888\n"
 "X-Crowdin-Language: nl\n"
 "X-Crowdin-File: openplotter-i2c.po\n"
 "X-Crowdin-File-ID: 15\n"
+"X-Poedit-SearchPath-0: .\n"
 
 #: i2cPostInstall.py:28
-msgid "Adding openplotter-i2c-read service..."
-msgstr "Openplotter-i2c-read service wordt toegevoegd..."
+msgid "Installing python packages..."
+msgstr ""
 
-#: i2cPostInstall.py:34 i2cPostInstall.py:40 i2cPreUninstall.py:33
-#: i2cPreUninstall.py:39
+#: i2cPostInstall.py:31 i2cPostInstall.py:40 i2cPostInstall.py:46
+#: i2cPreUninstall.py:33 i2cPreUninstall.py:39
 msgid "DONE"
 msgstr "KLAAR"
 
-#: i2cPostInstall.py:35 i2cPostInstall.py:41 i2cPreUninstall.py:34
-#: i2cPreUninstall.py:40
+#: i2cPostInstall.py:32 i2cPostInstall.py:41 i2cPostInstall.py:47
+#: i2cPreUninstall.py:34 i2cPreUninstall.py:40
 msgid "FAILED: "
 msgstr "MISLUKT: "
 
-#: i2cPostInstall.py:37
+#: i2cPostInstall.py:34
+msgid "Adding openplotter-i2c-read service..."
+msgstr "Openplotter-i2c-read service wordt toegevoegd..."
+
+#: i2cPostInstall.py:43
 msgid "Setting version..."
 msgstr "Versie instellen..."
 
@@ -46,163 +50,201 @@ msgstr "Openplotter-i2c-read service wordt verwijderd..."
 msgid "Removing version..."
 msgstr "Versie verwijderen..."
 
-#: openplotterI2c.py:49
-msgid "Help"
-msgstr "Help"
-
-#: openplotterI2c.py:52
-msgid "Settings"
-msgstr "Instellingen"
-
-#: openplotterI2c.py:55
-msgid "I2C Addresses"
-msgstr "I2C adressen"
-
-#: openplotterI2c.py:58
-msgid "Refresh"
-msgstr "Verversen"
-
-#: openplotterI2c.py:71
-msgid "Sensors"
-msgstr "Sensoren"
-
-#: openplotterI2c.py:72
-msgid "Connections"
-msgstr "Verbindingen"
-
-#: openplotterI2c.py:153
-msgid "Failed"
-msgstr "Mislukt"
-
-#: openplotterI2c.py:165 openplotterI2c.py:475
-msgid "Name"
-msgstr "Naam"
-
-#: openplotterI2c.py:166 openplotterI2c.py:476
-msgid "Address"
-msgstr "Adres"
-
-#: openplotterI2c.py:167
-msgid "Magnitude"
-msgstr "Grootte"
-
-#: openplotterI2c.py:168 openplotterI2c.py:552
-msgid "Signal K key"
-msgstr "Signal K sleutel"
-
-#: openplotterI2c.py:169
-msgid "Rate"
-msgstr "Frequentie"
-
-#: openplotterI2c.py:170 openplotterI2c.py:570
-msgid "Offset"
-msgstr "Afwijking"
-
-#: openplotterI2c.py:176
-msgid "Add"
-msgstr "Toevoegen"
-
-#: openplotterI2c.py:178 openplotterI2c.py:547 openplotterI2c.py:556
-msgid "Edit"
-msgstr "Bewerken"
-
-#: openplotterI2c.py:180
-msgid "Remove"
-msgstr "Verwijderen"
-
-#: openplotterI2c.py:195 openplotterI2c.py:196
+#: openplotterI2c.py:41 openplotterI2c.py:42 openplotterI2c.py:43
+#: openplotterI2c.py:45
 msgid "pressure"
 msgstr "luchtdruk"
 
-#: openplotterI2c.py:195 openplotterI2c.py:196
+#: openplotterI2c.py:41 openplotterI2c.py:42 openplotterI2c.py:43
+#: openplotterI2c.py:44 openplotterI2c.py:45
 msgid "temperature"
 msgstr "temperatuur"
 
-#: openplotterI2c.py:195
+#: openplotterI2c.py:41 openplotterI2c.py:44
 msgid "humidity"
 msgstr "luchtvochtigheid"
 
-#: openplotterI2c.py:250
+#: openplotterI2c.py:46
+msgid "voltage"
+msgstr ""
+
+#: openplotterI2c.py:46
+msgid "current"
+msgstr ""
+
+#: openplotterI2c.py:46
+msgid "power"
+msgstr ""
+
+#: openplotterI2c.py:58
+msgid "Help"
+msgstr "Help"
+
+#: openplotterI2c.py:61 openplotterI2c.py:526 openplotterI2c.py:629
+msgid "Settings"
+msgstr "Instellingen"
+
+#: openplotterI2c.py:64
+msgid "I2C Addresses"
+msgstr "I2C adressen"
+
+#: openplotterI2c.py:67
+msgid "Refresh"
+msgstr "Verversen"
+
+#: openplotterI2c.py:75
+msgid "Sensors"
+msgstr "Sensoren"
+
+#: openplotterI2c.py:76
+msgid "Connections"
+msgstr "Verbindingen"
+
+#: openplotterI2c.py:157
+msgid "Failed"
+msgstr "Mislukt"
+
+#: openplotterI2c.py:169
+msgid "Name"
+msgstr "Naam"
+
+#: openplotterI2c.py:170
+msgid "Address"
+msgstr "Adres"
+
+#: openplotterI2c.py:171
+msgid "Magnitude"
+msgstr "Grootte"
+
+#: openplotterI2c.py:172 openplotterI2c.py:606
+msgid "Signal K key"
+msgstr "Signal K sleutel"
+
+#: openplotterI2c.py:173
+msgid "Rate"
+msgstr "Frequentie"
+
+#: openplotterI2c.py:174 openplotterI2c.py:625
+msgid "Offset"
+msgstr "Afwijking"
+
+#: openplotterI2c.py:175
+msgid "Raw"
+msgstr ""
+
+#: openplotterI2c.py:176
+msgid "Sensor Settings"
+msgstr ""
+
+#: openplotterI2c.py:177
+msgid "Magnitude Settings"
+msgstr ""
+
+#: openplotterI2c.py:183
+msgid "Add"
+msgstr "Toevoegen"
+
+#: openplotterI2c.py:185
+msgid "Remove"
+msgstr "Verwijderen"
+
+#: openplotterI2c.py:188 openplotterI2c.py:600 openplotterI2c.py:610
+msgid "Edit"
+msgstr "Bewerken"
+
+#: openplotterI2c.py:225
+msgid "yes"
+msgstr ""
+
+#: openplotterI2c.py:226
+msgid "no"
+msgstr ""
+
+#: openplotterI2c.py:271
 msgid "Failed. You must select a sensor."
 msgstr "Mislukt. U moet een sensor selecteren."
 
-#: openplotterI2c.py:255
+#: openplotterI2c.py:276
 msgid "Failed. You must provide an address."
 msgstr "Mislukt. U moet een adres opgeven."
 
-#: openplotterI2c.py:313
+#: openplotterI2c.py:281
+msgid "Failed. This address is already being used."
+msgstr ""
+
+#: openplotterI2c.py:377
 msgid "I2C service is enabled"
 msgstr "I2C service is ingeschakeld"
 
-#: openplotterI2c.py:316
+#: openplotterI2c.py:380
 msgid "There is nothing to send. I2C service is disabled"
 msgstr "Er is niets te verzenden. I2C service is uitgeschakeld"
 
-#: openplotterI2c.py:334
+#: openplotterI2c.py:398
 msgid "Sensor"
 msgstr "Sensor"
 
-#: openplotterI2c.py:335 openplotterI2c.py:623
+#: openplotterI2c.py:399 openplotterI2c.py:694
 msgid "Port"
 msgstr "Poort"
 
-#: openplotterI2c.py:336
+#: openplotterI2c.py:400
 msgid "SK connection ID"
 msgstr "SK verbinding ID"
 
-#: openplotterI2c.py:342
+#: openplotterI2c.py:406
 msgid "Edit Port"
 msgstr "Poort bewerken"
 
-#: openplotterI2c.py:345
+#: openplotterI2c.py:409
 msgid "Add Connection"
 msgstr "Voeg verbinding toe"
 
-#: openplotterI2c.py:347
+#: openplotterI2c.py:411
 msgid "Edit connection"
 msgstr "Bewerk SK verbinding"
 
-#: openplotterI2c.py:349
+#: openplotterI2c.py:413
 msgid "Remove connection"
 msgstr "Koppeling verwijderen"
 
-#: openplotterI2c.py:411
+#: openplotterI2c.py:475
 msgid "Failed. Error creating connection in Signal K"
 msgstr "Mislukt. Fout bij maken van verbinding in Signal K"
 
-#: openplotterI2c.py:413 openplotterI2c.py:439 openplotterI2c.py:451
+#: openplotterI2c.py:477
 msgid "Please install \"Signal K Installer\" OpenPlotter app"
 msgstr "Installeer \"Signal K Installer\" OpenPlotter app"
 
-#: openplotterI2c.py:432
+#: openplotterI2c.py:496
 msgid "Failed. Error removing connection in Signal K"
 msgstr "Mislukt. Fout bij het verwijderen van de verbinding in Signal K"
 
-#: openplotterI2c.py:447
-msgid "Please install \"signalk-to-nmea2000\" Signal K app"
-msgstr "Installeer \"signalk-to-nmea2000\" Signal K app"
-
-#: openplotterI2c.py:455
+#: openplotterI2c.py:499
 msgid "Restarting Signal K server... "
 msgstr "Signal K server wordt herstart... "
 
-#: openplotterI2c.py:461
+#: openplotterI2c.py:505
 msgid "Signal K server restarted"
 msgstr "Signal K server herstart"
 
-#: openplotterI2c.py:468
+#: openplotterI2c.py:513
 msgid "Add I2C sensor"
 msgstr "Voeg I2C-sensor toe"
 
-#: openplotterI2c.py:472
-msgid "detected"
-msgstr "gevonden"
+#: openplotterI2c.py:519
+msgid "Supported sensors"
+msgstr ""
 
-#: openplotterI2c.py:482
-msgid "add/update sensor"
-msgstr "toevoegen/bijwerken sensor"
+#: openplotterI2c.py:529
+msgid "Detected addresses"
+msgstr ""
 
-#: openplotterI2c.py:566
+#: openplotterI2c.py:617
+msgid "Add raw values"
+msgstr ""
+
+#: openplotterI2c.py:621
 msgid "Rate (seconds)"
 msgstr "Frequentie (sec)"
 
@@ -234,7 +276,6 @@ msgstr " | niet actief"
 msgid "Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces."
 msgstr "Activeer de I2C interface in Voorkeuren -> Raspberry Pi configuratie -> Interfaces."
 
-#: startup.py:81 startup.py:82
+#: startup.py:80 startup.py:81
 msgid "There is no Signal K connection for sensor: "
 msgstr ""
-

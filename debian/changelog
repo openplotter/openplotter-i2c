@@ -1,3 +1,18 @@
+openplotter-i2c (2.2.0-beta) bionic; urgency=medium
+
+  * Fix error on ports conflicts
+  * Add ADS1115 support
+  * Add HTU21D support
+  * Add BMP280 support
+  * Update BME280 code
+  * Add BMP3XX support
+  * Add INA260 support
+  * Cosmetic changes
+  * Add GPIO management
+  * Update translations
+
+ -- Sailoog <info@sailoog.com>  Mon, 02 Nov 2020 17:57:21 +0100
+
 openplotter-i2c (2.1.2-stable) bionic; urgency=medium
 
   * Handle bus access exceptions at startup

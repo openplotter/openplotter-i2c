@@ -50,35 +50,34 @@ class Check():
 		except: i2c_sensors = {}
 
 		try:
-			subprocess.check_output(['i2cdetect', '-y', '0']).decode(sys.stdin.encoding)
-			red = _('Your Raspberry Pi is too old.')
+			out = subprocess.check_output('ls /dev/i2c*', shell=True).decode(sys.stdin.encoding)
+			if '/dev/i2c-0' in out: red = _('Your Raspberry Pi is too old.')
+			if '/dev/i2c-1' in out: black = _('I2C enabled')
 		except:
-			try:
-				subprocess.check_output(['i2cdetect', '-y', '1']).decode(sys.stdin.encoding)
-				black = _('I2C enabled')
-				try:
-					subprocess.check_output(['systemctl', 'is-active', 'openplotter-i2c-read.service']).decode(sys.stdin.encoding)
-					green = _('running')
-				except: black += _(' | not running')
-			except:
-				if i2c_sensors: red = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
-				else: black = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
-			try:
-				setting_file = platform2.skDir+'/settings.json'
-				with open(setting_file) as data_file:
-					skdata = ujson.load(data_file)
-			except: skdata = {}
+			if i2c_sensors: red = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
+			else: black = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
+				
+		try:
+			subprocess.check_output(['systemctl', 'is-active', 'openplotter-i2c-read.service']).decode(sys.stdin.encoding)
+			green = _('running')
+		except: black += _(' | not running')
 
-			for i in i2c_sensors:
-				exists = False
-				if 'pipedProviders' in skdata:
-					for ii in skdata['pipedProviders']:
-						if ii['pipeElements'][0]['options']['type']=='SignalK':
-							if ii['pipeElements'][0]['options']['subOptions']['type']=='udp':
-								if ii['pipeElements'][0]['options']['subOptions']['port'] == str(i2c_sensors[i]['port']): exists = True
-				if not exists: 
-					if not red: red = _('There is no Signal K connection for sensor: ')+ i
-					else: red += '\n'+_('There is no Signal K connection for sensor: ')+ i
+		try:
+			setting_file = platform2.skDir+'/settings.json'
+			with open(setting_file) as data_file:
+				skdata = ujson.load(data_file)
+		except: skdata = {}
+
+		for i in i2c_sensors:
+			exists = False
+			if 'pipedProviders' in skdata:
+				for ii in skdata['pipedProviders']:
+					if ii['pipeElements'][0]['options']['type']=='SignalK':
+						if ii['pipeElements'][0]['options']['subOptions']['type']=='udp':
+							if ii['pipeElements'][0]['options']['subOptions']['port'] == str(i2c_sensors[i]['port']): exists = True
+			if not exists: 
+				if not red: red = _('There is no Signal K connection for sensor: ')+ i
+				else: red += '\n'+_('There is no Signal K connection for sensor: ')+ i
 
 		return {'green': green,'black': black,'red': red}
 

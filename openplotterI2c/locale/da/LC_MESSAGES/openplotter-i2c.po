@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
 "POT-Creation-Date: 2020-11-01 18:15+0100\n"
-"PO-Revision-Date: 2020-11-02 17:54+0100\n"
+"PO-Revision-Date: 2020-12-02 19:38+0100\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Language: da\n"
@@ -22,7 +22,7 @@ msgstr ""
 
 #: i2cPostInstall.py:28
 msgid "Installing python packages..."
-msgstr ""
+msgstr "Installerer python-pakker..."
 
 #: i2cPostInstall.py:31 i2cPostInstall.py:40 i2cPostInstall.py:46
 #: i2cPreUninstall.py:33 i2cPreUninstall.py:39
@@ -66,15 +66,15 @@ msgstr "luftfugtighed"
 
 #: openplotterI2c.py:46
 msgid "voltage"
-msgstr ""
+msgstr "spænding"
 
 #: openplotterI2c.py:46
 msgid "current"
-msgstr ""
+msgstr "ampere"
 
 #: openplotterI2c.py:46
 msgid "power"
-msgstr ""
+msgstr "strøm"
 
 #: openplotterI2c.py:58
 msgid "Help"
@@ -130,15 +130,15 @@ msgstr "Forskydning"
 
 #: openplotterI2c.py:175
 msgid "Raw"
-msgstr ""
+msgstr "Rå"
 
 #: openplotterI2c.py:176
 msgid "Sensor Settings"
-msgstr ""
+msgstr "Sensor Indstillinger"
 
 #: openplotterI2c.py:177
 msgid "Magnitude Settings"
-msgstr ""
+msgstr "Magnitude-indstillinger"
 
 #: openplotterI2c.py:183
 msgid "Add"
@@ -154,11 +154,11 @@ msgstr "Rediger"
 
 #: openplotterI2c.py:225
 msgid "yes"
-msgstr ""
+msgstr "ja"
 
 #: openplotterI2c.py:226
 msgid "no"
-msgstr ""
+msgstr "nej"
 
 #: openplotterI2c.py:271
 msgid "Failed. You must select a sensor."
@@ -170,7 +170,7 @@ msgstr "Mislykkedes. Du skal angive en adresse."
 
 #: openplotterI2c.py:281
 msgid "Failed. This address is already being used."
-msgstr ""
+msgstr "Fejlede. Denne adresse bruges allerede."
 
 #: openplotterI2c.py:377
 msgid "I2C service is enabled"
@@ -234,15 +234,15 @@ msgstr "Tilføj I2C sensor"
 
 #: openplotterI2c.py:519
 msgid "Supported sensors"
-msgstr ""
+msgstr "Understøttede sensorer"
 
 #: openplotterI2c.py:529
 msgid "Detected addresses"
-msgstr ""
+msgstr "Registrerede adresser"
 
 #: openplotterI2c.py:617
 msgid "Add raw values"
-msgstr ""
+msgstr "Tilføj rå værdier"
 
 #: openplotterI2c.py:621
 msgid "Rate (seconds)"

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: openplotter-i2c\n"
-"POT-Creation-Date: 2020-11-01 18:15+0100\n"
-"PO-Revision-Date: 2020-11-02 17:54+0100\n"
+"POT-Creation-Date: 2020-12-02 19:37+0100\n"
+"PO-Revision-Date: 2020-12-02 19:38+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -255,24 +255,24 @@ msgstr ""
 msgid "Your Raspberry Pi is too old."
 msgstr ""
 
-#: startup.py:58
+#: startup.py:55
 msgid "I2C enabled"
 msgstr ""
 
-#: startup.py:61
-msgid "running"
-msgstr ""
-
-#: startup.py:62
-msgid " | not running"
-msgstr ""
-
-#: startup.py:64 startup.py:65
+#: startup.py:57 startup.py:58
 msgid ""
 "Please enable I2C interface in Preferences -> Raspberry Pi configuration -> "
 "Interfaces."
 msgstr ""
 
-#: startup.py:80 startup.py:81
+#: startup.py:62
+msgid "running"
+msgstr ""
+
+#: startup.py:63
+msgid " | not running"
+msgstr ""
+
+#: startup.py:79 startup.py:80
 msgid "There is no Signal K connection for sensor: "
 msgstr ""

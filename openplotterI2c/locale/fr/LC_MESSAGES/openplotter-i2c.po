@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
 "POT-Creation-Date: 2020-11-01 18:15+0100\n"
-"PO-Revision-Date: 2020-11-02 17:54+0100\n"
+"PO-Revision-Date: 2020-12-02 19:38+0100\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -22,7 +22,7 @@ msgstr ""
 
 #: i2cPostInstall.py:28
 msgid "Installing python packages..."
-msgstr ""
+msgstr "Installation des paquets Python..."
 
 #: i2cPostInstall.py:31 i2cPostInstall.py:40 i2cPostInstall.py:46
 #: i2cPreUninstall.py:33 i2cPreUninstall.py:39
@@ -66,15 +66,15 @@ msgstr "humidité"
 
 #: openplotterI2c.py:46
 msgid "voltage"
-msgstr ""
+msgstr "voltage"
 
 #: openplotterI2c.py:46
 msgid "current"
-msgstr ""
+msgstr "courant"
 
 #: openplotterI2c.py:46
 msgid "power"
-msgstr ""
+msgstr "alimentation"
 
 #: openplotterI2c.py:58
 msgid "Help"
@@ -130,15 +130,15 @@ msgstr "Décalage"
 
 #: openplotterI2c.py:175
 msgid "Raw"
-msgstr ""
+msgstr "Brut"
 
 #: openplotterI2c.py:176
 msgid "Sensor Settings"
-msgstr ""
+msgstr "Réglage des capteurs"
 
 #: openplotterI2c.py:177
 msgid "Magnitude Settings"
-msgstr ""
+msgstr "Paramètres de Magnitude"
 
 #: openplotterI2c.py:183
 msgid "Add"
@@ -154,11 +154,11 @@ msgstr "Modifier"
 
 #: openplotterI2c.py:225
 msgid "yes"
-msgstr ""
+msgstr "oui"
 
 #: openplotterI2c.py:226
 msgid "no"
-msgstr ""
+msgstr "non"
 
 #: openplotterI2c.py:271
 msgid "Failed. You must select a sensor."
@@ -170,7 +170,7 @@ msgstr "Échec. Vous devez fournir une adresse."
 
 #: openplotterI2c.py:281
 msgid "Failed. This address is already being used."
-msgstr ""
+msgstr "Échec. Cette adresse est déjà utilisée."
 
 #: openplotterI2c.py:377
 msgid "I2C service is enabled"
@@ -210,7 +210,7 @@ msgstr "Supprimer la connexion"
 
 #: openplotterI2c.py:475
 msgid "Failed. Error creating connection in Signal K"
-msgstr "Échec. Erreur lors de la création de la connection en Signal K"
+msgstr "Échec. Erreur lors de la création de la connexion en Signal K"
 
 #: openplotterI2c.py:477
 msgid "Please install \"Signal K Installer\" OpenPlotter app"
@@ -234,15 +234,15 @@ msgstr "Ajouter un capteur I2C"
 
 #: openplotterI2c.py:519
 msgid "Supported sensors"
-msgstr ""
+msgstr "Capteurs pris en charge"
 
 #: openplotterI2c.py:529
 msgid "Detected addresses"
-msgstr ""
+msgstr "Adresses détectées"
 
 #: openplotterI2c.py:617
 msgid "Add raw values"
-msgstr ""
+msgstr "Ajouter des valeurs brutes"
 
 #: openplotterI2c.py:621
 msgid "Rate (seconds)"

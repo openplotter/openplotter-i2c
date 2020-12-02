@@ -1,3 +1,11 @@
+openplotter-i2c (2.2.1-stable) bionic; urgency=medium
+
+  * Remove i2cdetect from startup
+  * Update translations
+  * Set stable version
+
+ -- Sailoog <info@sailoog.com>  Wed, 02 Dec 2020 19:40:24 +0100
+
 openplotter-i2c (2.2.0-beta) bionic; urgency=medium
 
   * Fix error on ports conflicts

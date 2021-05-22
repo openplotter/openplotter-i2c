@@ -444,11 +444,12 @@ def work_BMP180(name, data):
 	temperatureKey = data['data'][1]['SKkey']
 
 	if pressureKey or temperatureKey:
-		import adafruit_BMP.BMP085 as BMP180 
+		import Adafruit_BMP.BMP085 as BMP180 
 
 		address = data['address']
-		i2c = busio.I2C(board.SCL, board.SDA)
-		sensor = BMP180(address=int(address, 16), i2c=i2c, mode=BMP085_HIGHRES)
+		#i2c = busio.I2C(board.SCL, board.SDA)
+		#sensor = BMP180.BMP085(address=int(address, 16), i2c = i2c, mode=BMP180.BMP085_HIGHRES)
+		sensor = BMP180.BMP085(address=int(address, 16), mode=BMP180.BMP085_HIGHRES)
 
 		if pressureKey: 
 			pressureRaw = data['data'][0]['raw']
@@ -479,14 +480,14 @@ def work_BMP180(name, data):
 				if temperatureKey:
 					tick0 = time.time()
 					if tick0 - tick2 > temperatureRate:
-						try: temperatureValue = round(sensor.get_temperature(), 1)
-						except: temperatureValue = sensor.get_temperature()
+						try: temperatureValue = round(sensor.read_temperature(), 1)
+						except: temperatureValue = sensor.read_temperature()
 						try: temperatureValue2 = float(temperatureValue)+273.15
 						except: temperatureValue2 = ''
 						Erg += getPaths(temperatureValue, temperatureValue2, temperatureKey, temperatureOffset, temperatureRaw)
 						tick2 = time.time()
 				if Erg:		
-					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
+					SignalK='{"updates":[{"$source":"loefkvist.I2C.'+name+'","values":['
 					SignalK+=Erg[0:-1]+']}]}\n'		
 					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
 			except Exception as e: print ("BMP180 reading failed: "+str(e))

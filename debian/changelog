@@ -1,3 +1,9 @@
+openplotter-i2c (2.2.2-devel) bionic; urgency=medium
+
+  * Add BMP180 support
+
+ -- loefkvist <kim@loefkvist.dk>  Sat, 22 May 2021 20:43:24 +0200
+
 openplotter-i2c (2.2.1-stable) bionic; urgency=medium
 
   * Remove i2cdetect from startup

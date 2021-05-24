@@ -473,7 +473,7 @@ def work_BMP180(name, data):
 					if tick0 - tick1 > pressureRate:
 						try: pressureValue = round(sensor.read_pressure(), 2)
 						except: pressureValue = sensor.read_pressure()
-						try: pressureValue2 = float(pressureValue)*100
+						try: pressureValue2 = float(pressureValue)
 						except: pressureValue2 = ''
 						Erg += getPaths(pressureValue, pressureValue2, pressureKey, pressureOffset, pressureRaw)
 						tick1 = time.time()

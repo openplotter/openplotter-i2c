@@ -487,7 +487,7 @@ def work_BMP180(name, data):
 						Erg += getPaths(temperatureValue, temperatureValue2, temperatureKey, temperatureOffset, temperatureRaw)
 						tick2 = time.time()
 				if Erg:		
-					SignalK='{"updates":[{"$source":"loefkvist.I2C.'+name+'","values":['
+					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
 					SignalK+=Erg[0:-1]+']}]}\n'		
 					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
 			except Exception as e: print ("BMP180 reading failed: "+str(e))

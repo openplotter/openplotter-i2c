@@ -41,8 +41,7 @@ def work_BME280(name,data):
 	humidityKey = data['data'][2]['SKkey']
 
 	if pressureKey or temperatureKey or humidityKey:
-		import adafruit_bme280
-
+		from adafruit_bme280 import basic as adafruit_bme280
 		address = data['address']
 		i2c = busio.I2C(board.SCL, board.SDA)
 		sensor = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=int(address, 16))

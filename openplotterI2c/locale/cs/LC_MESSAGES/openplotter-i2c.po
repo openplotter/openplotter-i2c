@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
 "POT-Creation-Date: 2020-11-01 18:15+0100\n"
-"PO-Revision-Date: 2020-12-02 19:38+0100\n"
+"PO-Revision-Date: 2022-06-01 19:10\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Language: cs\n"
@@ -13,16 +13,16 @@ msgstr ""
 "X-Poedit-Basepath: ../../..\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: .\n"
 "X-Crowdin-Project: openplotter\n"
 "X-Crowdin-Project-ID: 289888\n"
 "X-Crowdin-Language: cs\n"
 "X-Crowdin-File: openplotter-i2c.po\n"
 "X-Crowdin-File-ID: 15\n"
-"X-Poedit-SearchPath-0: .\n"
 
 #: i2cPostInstall.py:28
 msgid "Installing python packages..."
-msgstr ""
+msgstr "Instalování balíčků pro Python..."
 
 #: i2cPostInstall.py:31 i2cPostInstall.py:40 i2cPostInstall.py:46
 #: i2cPreUninstall.py:33 i2cPreUninstall.py:39
@@ -66,15 +66,15 @@ msgstr "vlhkost"
 
 #: openplotterI2c.py:46
 msgid "voltage"
-msgstr ""
+msgstr "napětí"
 
 #: openplotterI2c.py:46
 msgid "current"
-msgstr ""
+msgstr "proud"
 
 #: openplotterI2c.py:46
 msgid "power"
-msgstr ""
+msgstr "napájení"
 
 #: openplotterI2c.py:58
 msgid "Help"
@@ -130,15 +130,15 @@ msgstr "Posun"
 
 #: openplotterI2c.py:175
 msgid "Raw"
-msgstr ""
+msgstr "Raw"
 
 #: openplotterI2c.py:176
 msgid "Sensor Settings"
-msgstr ""
+msgstr "Nastavení senzoru"
 
 #: openplotterI2c.py:177
 msgid "Magnitude Settings"
-msgstr ""
+msgstr "Nastavení velikosti"
 
 #: openplotterI2c.py:183
 msgid "Add"
@@ -154,11 +154,11 @@ msgstr "Upravit"
 
 #: openplotterI2c.py:225
 msgid "yes"
-msgstr ""
+msgstr "ano"
 
 #: openplotterI2c.py:226
 msgid "no"
-msgstr ""
+msgstr "ne"
 
 #: openplotterI2c.py:271
 msgid "Failed. You must select a sensor."
@@ -170,7 +170,7 @@ msgstr "Chyba. Musíte zadat adresu."
 
 #: openplotterI2c.py:281
 msgid "Failed. This address is already being used."
-msgstr ""
+msgstr "Chyba. Tato adresa se již používá."
 
 #: openplotterI2c.py:377
 msgid "I2C service is enabled"
@@ -234,15 +234,15 @@ msgstr "Přidat I2C senzor"
 
 #: openplotterI2c.py:519
 msgid "Supported sensors"
-msgstr ""
+msgstr "Podporované senzory"
 
 #: openplotterI2c.py:529
 msgid "Detected addresses"
-msgstr ""
+msgstr "Zjištěné adresy"
 
 #: openplotterI2c.py:617
 msgid "Add raw values"
-msgstr ""
+msgstr "Přidat raw hodnotu"
 
 #: openplotterI2c.py:621
 msgid "Rate (seconds)"
@@ -279,3 +279,4 @@ msgstr "Prosím povolte I2C rozhraní v Nastavení -> Raspberry Pi konfigurace -
 #: startup.py:80 startup.py:81
 msgid "There is no Signal K connection for sensor: "
 msgstr "Pro senzor neexistuje žádné připojení k Signal K: "
+

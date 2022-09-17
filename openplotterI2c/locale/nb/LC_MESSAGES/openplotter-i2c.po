@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
 "POT-Creation-Date: 2020-11-01 18:15+0100\n"
-"PO-Revision-Date: 2020-12-02 19:38+0100\n"
+"PO-Revision-Date: 2022-09-10 09:58\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian Bokmal\n"
 "Language: nb_NO\n"
@@ -13,16 +13,16 @@ msgstr ""
 "X-Poedit-Basepath: ../../..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: .\n"
 "X-Crowdin-Project: openplotter\n"
 "X-Crowdin-Project-ID: 289888\n"
 "X-Crowdin-Language: nb\n"
 "X-Crowdin-File: openplotter-i2c.po\n"
 "X-Crowdin-File-ID: 15\n"
-"X-Poedit-SearchPath-0: .\n"
 
 #: i2cPostInstall.py:28
 msgid "Installing python packages..."
-msgstr ""
+msgstr "Installerer python-pakker..."
 
 #: i2cPostInstall.py:31 i2cPostInstall.py:40 i2cPostInstall.py:46
 #: i2cPreUninstall.py:33 i2cPreUninstall.py:39
@@ -66,15 +66,15 @@ msgstr "luftfuktighet"
 
 #: openplotterI2c.py:46
 msgid "voltage"
-msgstr ""
+msgstr "spenning"
 
 #: openplotterI2c.py:46
 msgid "current"
-msgstr ""
+msgstr "strøm"
 
 #: openplotterI2c.py:46
 msgid "power"
-msgstr ""
+msgstr "kraft"
 
 #: openplotterI2c.py:58
 msgid "Help"
@@ -130,15 +130,15 @@ msgstr "Forskyvning"
 
 #: openplotterI2c.py:175
 msgid "Raw"
-msgstr ""
+msgstr "Rå"
 
 #: openplotterI2c.py:176
 msgid "Sensor Settings"
-msgstr ""
+msgstr "Sensorinnstillinger"
 
 #: openplotterI2c.py:177
 msgid "Magnitude Settings"
-msgstr ""
+msgstr "Omfangsinnstillinger"
 
 #: openplotterI2c.py:183
 msgid "Add"
@@ -154,11 +154,11 @@ msgstr "Rediger"
 
 #: openplotterI2c.py:225
 msgid "yes"
-msgstr ""
+msgstr "ja"
 
 #: openplotterI2c.py:226
 msgid "no"
-msgstr ""
+msgstr "nei"
 
 #: openplotterI2c.py:271
 msgid "Failed. You must select a sensor."
@@ -170,7 +170,7 @@ msgstr "Mislyktes. Du må oppgi en adresse."
 
 #: openplotterI2c.py:281
 msgid "Failed. This address is already being used."
-msgstr ""
+msgstr "Mislyktes. Denne adressen er allerede i bruk."
 
 #: openplotterI2c.py:377
 msgid "I2C service is enabled"
@@ -234,15 +234,15 @@ msgstr "Legg til I2C-sensor"
 
 #: openplotterI2c.py:519
 msgid "Supported sensors"
-msgstr ""
+msgstr "Støttede sensorer"
 
 #: openplotterI2c.py:529
 msgid "Detected addresses"
-msgstr ""
+msgstr "Oppdagede adresser"
 
 #: openplotterI2c.py:617
 msgid "Add raw values"
-msgstr ""
+msgstr "Legg til råverdier"
 
 #: openplotterI2c.py:621
 msgid "Rate (seconds)"
@@ -279,3 +279,4 @@ msgstr "Vennligst aktiver I2C grensesnitt i Innstillinger -> Raspberry Pi konfig
 #: startup.py:80 startup.py:81
 msgid "There is no Signal K connection for sensor: "
 msgstr "Det er ingen Signal K-tilkobling til sensor: "
+

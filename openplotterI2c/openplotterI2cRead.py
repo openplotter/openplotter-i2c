@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-# This file is part of Openplotter.
-# Copyright (C) 2019 by sailoog <https://github.com/sailoog/openplotter>
-#                     e-sailing <https://github.com/e-sailing/openplotter>
+# This file is part of OpenPlotter.
+# Copyright (C) 2022 by Sailoog <https://github.com/openplotter/openplotter-i2c>
+#                       e-sailing <https://github.com/e-sailing/openplotter-i2c>
 # Openplotter is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
@@ -15,176 +15,632 @@
 # You should have received a copy of the GNU General Public License
 # along with Openplotter. If not, see <http://www.gnu.org/licenses/>.
 
-import socket, time, threading, board, busio
+import time, board, json, ssl
 from openplotterSettings import conf
-from .ms5607 import Ms5607
+from openplotterSettings import platform
+from websocket import create_connection
+from collections import OrderedDict
 
-def work_BME280(name,data):
+def getPaths(Erg,value,value2,key,offset,raw):
+	if value2: Erg.append({"path":key,"value":offset+value2})
+	else: Erg.append({"path":key,"value":None})
+	if raw:
+		if value: Erg.append({"path":key+'.raw',"value":value})
+		else: Erg.append({"path":key+'.raw',"value":None})
+	return Erg
 
-	def getPaths(value,value2,key,offset,raw):
-		Erg = ''
-		if value2:
+def getPaths2(Erg,ranges,value,voltage,key,offset,raw):
+	if ranges:
+		result = ''
+		for i,v in enumerate(ranges):
+			r1 = ranges[i][0]
+			r2 = ranges[i][1]
+			if value >= r1[0] and value <= r1[1]:
+					if type(r2) == list:
+						a = r1[1]-r1[0]
+						b = value-r1[0]
+						pc = b*100/a
+						c = r2[1]-r2[0]
+						d = c*pc/100
+						result = r2[0]+d
+					else: result = r2
+		if result: Erg.append({"path":key,"value":offset+result})
+		else: Erg.append({"path":key,"value":None})
+	if raw and voltage and value:
+		if voltage: rawvoltage = voltage
+		else: rawvoltage = None
+		if value: rawvalue = value
+		else: rawvalue = None
+		rawresult = {"value":rawvalue,"voltage":rawvoltage}
+		Erg.append({"path": key+".raw","value": rawresult}) 
+	return Erg
+
+def getRanges(settings):
+	ranges = []
+	b = OrderedDict(sorted(settings.items()))
+	for i in b:
+		if 'range' in i:
+			c = b[i].split('->')
+			if len(c) == 2:
+				try:
+					d = c[0].split('|')
+					try:
+						e = c[1].split('|')
+						f = [float(e[0].lstrip()),float(e[1].lstrip())]
+					except: f = c[1].lstrip()
+					ranges.append([[int(d[0].lstrip()),int(d[1].lstrip())],f])
+				except: pass
+	return ranges
+
+def main():
+	conf2 = conf.Conf()
+	platform2 = platform.Platform()
+	if conf2.get('GENERAL', 'debug') == 'yes': debug = True
+	else: debug = False
+	try: i2c_sensors=eval(conf2.get('I2C', 'sensors'))
+	except: i2c_sensors=[]
+	instances = []
+	muxInstances = {}
+	i2c = board.I2C()
+
+	if i2c_sensors:
+		#set multiplexers
+		for i in i2c_sensors:
 			try:
-				value3 = float(value2)
-				Erg += '{"path": "'+key+'","value":'+str(offset+value3)+'},'
-			except: Erg += '{"path": "'+key+'","value":"'+str(value2)+'"},'
-		else: Erg += '{"path": "'+key+'","value": null},'
-		if raw and value:
+				if i2c_sensors[i]['channel'] != 0:
+					if i2c_sensors[i]['address']:
+						import adafruit_tca9548a
+						if not i2c_sensors[i]['address'] in muxInstances:
+							muxInstances[i2c_sensors[i]['address']] = adafruit_tca9548a.TCA9548A(i2c,address=int(i2c_sensors[i]['address'], 16))
+			except Exception as e:
+				if debug: print('Error processing Multiplexer: '+str(e))
+
+		#set sensors
+		now = time.time()
+		for i in i2c_sensors:
 			try:
-				value4 = float(value)
-				Erg += '{"path": "'+key+'.raw","value":'+str(value4)+'},'
-			except: Erg += '{"path": "'+key+'.raw","value":"'+str(value)+'"},'
-		return Erg
+				
+				if i2c_sensors[i]['type'] == 'BME680/688':
+					import adafruit_bme680
+					if i2c_sensors[i]['channel'] == 0:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'BME680/688','tick':[now,now,now,now], 'sensor':i2c_sensors[i],'object':adafruit_bme680.Adafruit_BME680_I2C(i2c, address=int(i2c_sensors[i]['address'], 16), debug=False)})
+					else:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'BME680/688','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':adafruit_bme680.Adafruit_BME680_I2C(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1], debug=False)})
 
-	pressureKey = data['data'][0]['SKkey']
-	temperatureKey = data['data'][1]['SKkey']
-	humidityKey = data['data'][2]['SKkey']
+				elif i2c_sensors[i]['type'] == 'BME280':
+					from adafruit_bme280 import basic as adafruit_bme280
+					if i2c_sensors[i]['channel'] == 0:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'BME280','tick':[now,now,now],'sensor':i2c_sensors[i],'object':adafruit_bme280.Adafruit_BME280_I2C(i2c, address=int(i2c_sensors[i]['address'], 16))})
+					else:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'BME280','tick':[now,now,now],'sensor':i2c_sensors[i],'object':adafruit_bme280.Adafruit_BME280_I2C(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
 
-	if pressureKey or temperatureKey or humidityKey:
-		from adafruit_bme280 import basic as adafruit_bme280
-		address = data['address']
-		i2c = busio.I2C(board.SCL, board.SDA)
-		sensor = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=int(address, 16))
+				elif i2c_sensors[i]['type'] == 'BMP280':
+					import adafruit_bmp280
+					if i2c_sensors[i]['channel'] == 0:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'BMP280','tick':[now,now],'sensor':i2c_sensors[i],'object':adafruit_bmp280.Adafruit_BMP280_I2C(i2c, address=int(i2c_sensors[i]['address'], 16))})
+					else:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'BMP280','tick':[now,now],'sensor':i2c_sensors[i],'object':adafruit_bmp280.Adafruit_BMP280_I2C(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
 
-		if pressureKey: 
-			pressureRaw = data['data'][0]['raw']
-			pressureRate = data['data'][0]['rate']
-			pressureOffset = data['data'][0]['offset']
-		if temperatureKey: 
-			temperatureRaw = data['data'][1]['raw']
-			temperatureRate = data['data'][1]['rate']
-			temperatureOffset = data['data'][1]['offset']
-		if humidityKey: 
-			humidityRaw = data['data'][2]['raw']
-			humidityRate = data['data'][2]['rate']
-			humidityOffset = data['data'][2]['offset']
+				elif i2c_sensors[i]['type'] == 'BMP3XX':
+					import adafruit_bmp3xx
+					if i2c_sensors[i]['channel'] == 0:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'BMP3XX','tick':[now,now],'sensor':i2c_sensors[i],'object':adafruit_bmp3xx.BMP3XX_I2C(i2c, address=int(i2c_sensors[i]['address'], 16))})
+					else:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'BMP3XX','tick':[now,now],'sensor':i2c_sensors[i],'object':adafruit_bmp3xx.BMP3XX_I2C(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
+					pressure_oversampling = 8
+					temperature_oversampling = 2
+					if 'sensorSettings' in instances[-1]['sensor']:
+						if 'pressure_oversampling' in instances[-1]['sensor']['sensorSettings']:
+							try: pressure_oversampling = int(instances[-1]['sensor']['sensorSettings']['pressure_oversampling'])
+							except: pass
+						if 'temperature_oversampling' in instances[-1]['sensor']['sensorSettings']:
+							try: temperature_oversampling = int(instances[-1]['sensor']['sensorSettings']['temperature_oversampling'])
+							except: pass
+					instances[-1]['object'].pressure_oversampling = pressure_oversampling
+					instances[-1]['object'].temperature_oversampling = temperature_oversampling
 
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		port = data['port']
-		tick1 = time.time()
-		tick2 = tick1
-		tick3 = tick1
-		while True:
-			time.sleep(0.1)
-			try:
-				Erg=''
-				if pressureKey:
-					tick0 = time.time()
-					if tick0 - tick1 > pressureRate:
-						try: pressureValue = round(sensor.pressure,2)
-						except: pressureValue = sensor.pressure
-						try: pressureValue2 = float(pressureValue)*100
-						except: pressureValue2 = ''
-						Erg += getPaths(pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
-						tick1 = time.time()
-				if temperatureKey:
-					tick0 = time.time()
-					if tick0 - tick2 > temperatureRate:
-						try: temperatureValue = round(sensor.temperature,1)
-						except: temperatureValue = sensor.temperature
-						try: temperatureValue2 = float(temperatureValue)+273.15
-						except: temperatureValue2 = ''
-						Erg += getPaths(temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
-						tick2 = time.time()
-				if humidityKey:
-					tick0 = time.time()
-					if tick0 - tick3 > humidityRate:
-						try: humidityValue = round(sensor.humidity,1)
-						except: humidityValue = sensor.humidity
-						try: humidityValue2 = float(humidityValue)
-						except: humidityValue2 = ''
-						Erg += getPaths(humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
-						tick3 = time.time()
-				if Erg:		
-					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
-					SignalK+=Erg[0:-1]+']}]}\n'		
-					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
-			except Exception as e: print ("BME280 reading failed: "+str(e))
+				elif i2c_sensors[i]['type'] == 'HTU21D':
+					from adafruit_htu21d import HTU21D
+					if i2c_sensors[i]['channel'] == 0:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'HTU21D','tick':[now,now],'sensor':i2c_sensors[i],'object':HTU21D(i2c, address=int(i2c_sensors[i]['address'], 16))})
+					else:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'HTU21D','tick':[now,now],'sensor':i2c_sensors[i],'object':HTU21D(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
 
-def work_MS5607(MS5607,data):
-	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	name = MS5607
-	port = data['port']
-	address = data['address']
-	pressureSK = data['data'][0]['SKkey']
-	pressureRate = data['data'][0]['rate']
-	pressureOffset = data['data'][0]['offset']
-	temperatureSK = data['data'][1]['SKkey']
-	temperatureRate = data['data'][1]['rate']
-	temperatureOffset = data['data'][1]['offset']
-	MS = None
-	tick1 = time.time()
-	tick2 = tick1
-	while True:
-		time.sleep(0.1)
-		try:
-			if not MS:
-				MS = Ms5607(address)
-			dig_temperature = MS.getDigitalTemperature()
-			dig_pressure = MS.getDigitalPressure()
-			pressure = MS.convertPressureTemperature(dig_pressure, dig_temperature)
-			temperature = MS.getTemperature()
-			tick0 = time.time()
-			Erg=''
-			if pressureSK and pressure:
-				if tick0 - tick1 > pressureRate:
-					Erg += '{"path": "'+pressureSK+'","value":'+str(pressureOffset+(pressure))+'},'
-					tick1 = tick0
-			if temperatureSK and temperature:
-				if tick0 - tick2 > temperatureRate:
-					Erg += '{"path": "'+temperatureSK+'","value":'+str(temperatureOffset+(temperature+273.15))+'},'
-					tick2 = tick0
-			if Erg:		
-				SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
-				SignalK+=Erg[0:-1]+']}]}\n'		
-				sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
-		except Exception as e: print ("MS5607-02BA03 reading failed: "+str(e))
+				elif i2c_sensors[i]['type'] == 'LPS3X':
+					import adafruit_lps35hw
+					if i2c_sensors[i]['channel'] == 0:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'LPS3X','tick':[now,now],'sensor':i2c_sensors[i],'object':adafruit_lps35hw.LPS35HW(i2c, address=int(i2c_sensors[i]['address'], 16))})
+					else:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'LPS3X','tick':[now,now],'sensor':i2c_sensors[i],'object':adafruit_lps35hw.LPS35HW(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
 
+				elif i2c_sensors[i]['type'] == 'MS5607-02BA03':
+					from .ms5607 import Ms5607
+					if i2c_sensors[i]['channel'] == 0:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'MS5607-02BA03','tick':[now,now],'sensor':i2c_sensors[i],'object':Ms5607(i2c_sensors[i]['address'])})
+					else:
+						if debug: print('MS5607-02BA03 sensors can not be multiplexed')
+
+				elif i2c_sensors[i]['type'] == 'BH1750':
+					import adafruit_bh1750
+					if i2c_sensors[i]['channel'] == 0:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'BH1750','tick':[now],'sensor':i2c_sensors[i],'object':adafruit_bh1750.BH1750(i2c, address=int(i2c_sensors[i]['address'], 16))})
+					else:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'BH1750','tick':[now],'sensor':i2c_sensors[i],'object':adafruit_bh1750.BH1750(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
+
+				elif i2c_sensors[i]['type'] == 'INA260':
+					import adafruit_ina260
+					if i2c_sensors[i]['channel'] == 0:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'INA260','tick':[now,now,now],'sensor':i2c_sensors[i],'object':adafruit_ina260.INA260(i2c, address=int(i2c_sensors[i]['address'], 16))})
+					else:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'INA260','tick':[now,now,now],'sensor':i2c_sensors[i],'object':adafruit_ina260.INA260(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
+
+				elif i2c_sensors[i]['type'] == 'INA219':
+					import adafruit_ina219
+					if i2c_sensors[i]['channel'] == 0:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'INA219','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':adafruit_ina219.INA219(i2c, addr=int(i2c_sensors[i]['address'], 16))})
+					else:
+						if i2c_sensors[i]['address']:
+							instances.append({'name':i,'type':'INA219','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':adafruit_ina219.INA219(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
+
+				elif i2c_sensors[i]['type'] == 'ADS1115' or i2c_sensors[i]['type'] == 'ADS1015':
+					from adafruit_ads1x15.analog_in import AnalogIn
+					if i2c_sensors[i]['type'] == 'ADS1115':
+						import adafruit_ads1x15.ads1115 as ADS11
+						if i2c_sensors[i]['channel'] == 0:
+							if i2c_sensors[i]['address']:
+								instances.append({'name':i,'type':'ADS1115','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':ADS11.ADS1115(i2c, address=int(i2c_sensors[i]['address'], 16))})
+						else:
+							if i2c_sensors[i]['address']:
+								instances.append({'name':i,'type':'ADS1115','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':ADS11.ADS1115(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
+						if instances[-1]['sensor']['data'][0]['SKkey']: instances[-1]['sensor']['data'][0]['object'] = AnalogIn(instances[-1]['object'], ADS11.P0)
+						if instances[-1]['sensor']['data'][1]['SKkey']: instances[-1]['sensor']['data'][1]['object'] = AnalogIn(instances[-1]['object'], ADS11.P1)
+						if instances[-1]['sensor']['data'][2]['SKkey']: instances[-1]['sensor']['data'][2]['object'] = AnalogIn(instances[-1]['object'], ADS11.P2)
+						if instances[-1]['sensor']['data'][3]['SKkey']: instances[-1]['sensor']['data'][3]['object'] = AnalogIn(instances[-1]['object'], ADS11.P3)
+
+					elif i2c_sensors[i]['type'] == 'ADS1015':
+						import adafruit_ads1x15.ads1015 as ADS10
+						if i2c_sensors[i]['channel'] == 0:
+							if i2c_sensors[i]['address']:
+								instances.append({'name':i,'type':'ADS1015','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':ADS10.ADS1015(i2c, address=int(i2c_sensors[i]['address'], 16))})
+						else:
+							if i2c_sensors[i]['address']:
+								instances.append({'name':i,'type':'ADS1015','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':ADS10.ADS1015(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
+						if instances[-1]['sensor']['data'][0]['SKkey']: instances[-1]['sensor']['data'][0]['object'] = AnalogIn(instances[-1]['object'], ADS10.P0)
+						if instances[-1]['sensor']['data'][1]['SKkey']: instances[-1]['sensor']['data'][1]['object'] = AnalogIn(instances[-1]['object'], ADS10.P1)
+						if instances[-1]['sensor']['data'][2]['SKkey']: instances[-1]['sensor']['data'][2]['object'] = AnalogIn(instances[-1]['object'], ADS10.P2)
+						if instances[-1]['sensor']['data'][3]['SKkey']: instances[-1]['sensor']['data'][3]['object'] = AnalogIn(instances[-1]['object'], ADS10.P3)
+
+					gain = 1
+					if 'sensorSettings' in instances[-1]['sensor']:
+						if 'gain' in instances[-1]['sensor']['sensorSettings']:
+							try: gain = int(instances[-1]['sensor']['sensorSettings']['gain'])
+							except: pass
+					instances[-1]['object'].gain = gain
+
+					for ii in range(4):
+						if 'magnitudeSettings' in instances[-1]['sensor']['data'][ii]:
+							instances[-1]['sensor']['data'][ii]['ranges'] = getRanges(instances[-1]['sensor']['data'][ii]['magnitudeSettings'])
+
+			except Exception as e:
+				if debug: print('Error processing '+i+': '+str(e))
+
+
+		#read sensors
+		if not instances:
+			if debug: print('Nothing to send, closing openplotter-i2c-read')
+			return
+		token = conf2.get('I2C', 'token')
+		ws = False
+		if token:
+			while True:
+				time.sleep(0.1)
+				if not ws:
+					try:
+						uri = platform2.ws+'localhost:'+platform2.skPort+'/signalk/v1/stream?subscribe=none'
+						headers = {'Authorization': 'Bearer '+token}
+						ws = create_connection(uri, header=headers, sslopt={"cert_reqs": ssl.CERT_NONE})
+					except Exception as e:
+						if debug: print('Error connecting to Signal K server:'+str(e))
+						if ws: ws.close()
+						ws = False
+						time.sleep(5)
+						continue
+				for index, i in enumerate(instances):
+					Erg = []
+					try:
+						if i['type'] == 'BME680/688':
+							pressureKey = i['sensor']['data'][0]['SKkey']
+							temperatureKey = i['sensor']['data'][1]['SKkey']
+							humidityKey = i['sensor']['data'][2]['SKkey']
+							gasKey = i['sensor']['data'][3]['SKkey']
+							if pressureKey:
+								pressureRaw = i['sensor']['data'][0]['raw']
+								pressureRate = i['sensor']['data'][0]['rate']
+								pressureOffset = i['sensor']['data'][0]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][0] > pressureRate:
+									try: pressureValue = round(i['object'].pressure,2)
+									except: pressureValue = i['object'].pressure
+									try: pressureValue2 = float(pressureValue)*100
+									except: pressureValue2 = ''
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									instances[index]['tick'][0] = time.time()
+							if temperatureKey:
+								temperatureRaw = i['sensor']['data'][1]['raw']
+								temperatureRate = i['sensor']['data'][1]['rate']
+								temperatureOffset = i['sensor']['data'][1]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][1] > temperatureRate:
+									try: temperatureValue = round(i['object'].temperature,1)
+									except: temperatureValue = i['object'].temperature
+									try: temperatureValue2 = float(temperatureValue)+273.15
+									except: temperatureValue2 = ''
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									instances[index]['tick'][1] = time.time()
+							if humidityKey:
+								humidityRaw = i['sensor']['data'][2]['raw']
+								humidityRate = i['sensor']['data'][2]['rate']
+								humidityOffset = i['sensor']['data'][2]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][2] > humidityRate:
+									try: humidityValue = round(i['object'].humidity,2)
+									except: humidityValue = i['object'].humidity
+									humidityValue2 = humidityValue
+									Erg = getPaths(Erg,humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
+									instances[index]['tick'][2] = time.time()
+							if gasKey:
+								gasRaw = i['sensor']['data'][3]['raw']
+								gasRate = i['sensor']['data'][3]['rate']
+								gasOffset = i['sensor']['data'][3]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][3] > gasRate:
+									try: gasValue = round(i['object'].gas,2)
+									except: gasValue = i['object'].gas
+									gasValue2 = gasValue
+									Erg = getPaths(Erg,gasValue,gasValue2,gasKey,gasOffset,gasRaw)
+									instances[index]['tick'][3] = time.time()
+						
+						elif i['type'] == 'BME280':
+							pressureKey = i['sensor']['data'][0]['SKkey']
+							temperatureKey = i['sensor']['data'][1]['SKkey']
+							humidityKey = i['sensor']['data'][2]['SKkey']
+							if pressureKey:
+								pressureRaw = i['sensor']['data'][0]['raw']
+								pressureRate = i['sensor']['data'][0]['rate']
+								pressureOffset = i['sensor']['data'][0]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][0] > pressureRate:
+									try: pressureValue = round(i['object'].pressure,2)
+									except: pressureValue = i['object'].pressure
+									try: pressureValue2 = float(pressureValue)*100
+									except: pressureValue2 = ''
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									instances[index]['tick'][0] = time.time()
+							if temperatureKey:
+								temperatureRaw = i['sensor']['data'][1]['raw']
+								temperatureRate = i['sensor']['data'][1]['rate']
+								temperatureOffset = i['sensor']['data'][1]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][1] > temperatureRate:
+									try: temperatureValue = round(i['object'].temperature,1)
+									except: temperatureValue = i['object'].temperature
+									try: temperatureValue2 = float(temperatureValue)+273.15
+									except: temperatureValue2 = ''
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									instances[index]['tick'][1] = time.time()
+							if humidityKey:
+								humidityRaw = i['sensor']['data'][2]['raw']
+								humidityRate = i['sensor']['data'][2]['rate']
+								humidityOffset = i['sensor']['data'][2]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][2] > humidityRate:
+									try: humidityValue = round(i['object'].humidity,1)
+									except: humidityValue = i['object'].humidity
+									humidityValue2 = humidityValue
+									Erg = getPaths(Erg,humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
+									instances[index]['tick'][2] = time.time()
+
+						elif i['type'] == 'BMP280':
+							pressureKey = i['sensor']['data'][0]['SKkey']
+							temperatureKey = i['sensor']['data'][1]['SKkey']
+							if pressureKey:
+								pressureRaw = i['sensor']['data'][0]['raw']
+								pressureRate = i['sensor']['data'][0]['rate']
+								pressureOffset = i['sensor']['data'][0]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][0] > pressureRate:
+									try: pressureValue = round(i['object'].pressure,2)
+									except: pressureValue = i['object'].pressure
+									try: pressureValue2 = float(pressureValue)*100
+									except: pressureValue2 = ''
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									instances[index]['tick'][0] = time.time()
+							if temperatureKey:
+								temperatureRaw = i['sensor']['data'][1]['raw']
+								temperatureRate = i['sensor']['data'][1]['rate']
+								temperatureOffset = i['sensor']['data'][1]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][1] > temperatureRate:
+									try: temperatureValue = round(i['object'].temperature,1)
+									except: temperatureValue = i['object'].temperature
+									try: temperatureValue2 = float(temperatureValue)+273.15
+									except: temperatureValue2 = ''
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									instances[index]['tick'][1] = time.time()
+
+						elif i['type'] == 'BMP3XX':
+							pressureKey = i['sensor']['data'][0]['SKkey']
+							temperatureKey = i['sensor']['data'][1]['SKkey']
+							if pressureKey:
+								pressureRaw = i['sensor']['data'][0]['raw']
+								pressureRate = i['sensor']['data'][0]['rate']
+								pressureOffset = i['sensor']['data'][0]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][0] > pressureRate:
+									try: pressureValue = round(i['object'].pressure,2)
+									except: pressureValue = i['object'].pressure
+									try: pressureValue2 = float(pressureValue)*100
+									except: pressureValue2 = ''
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									instances[index]['tick'][0] = time.time()
+							if temperatureKey:
+								temperatureRaw = i['sensor']['data'][1]['raw']
+								temperatureRate = i['sensor']['data'][1]['rate']
+								temperatureOffset = i['sensor']['data'][1]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][1] > temperatureRate:
+									try: temperatureValue = round(i['object'].temperature,1)
+									except: temperatureValue = i['object'].temperature
+									try: temperatureValue2 = float(temperatureValue)+273.15
+									except: temperatureValue2 = ''
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									instances[index]['tick'][1] = time.time()
+
+						elif i['type'] == 'HTU21D':
+							humidityKey = i['sensor']['data'][0]['SKkey']
+							temperatureKey = i['sensor']['data'][1]['SKkey']
+							if humidityKey:
+								humidityRaw = i['sensor']['data'][0]['raw']
+								humidityRate = i['sensor']['data'][0]['rate']
+								humidityOffset = i['sensor']['data'][0]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][0] > humidityRate:
+									try: humidityValue = round(i['object'].relative_humidity,1)
+									except: humidityValue = i['object'].relative_humidity
+									humidityValue2 = humidityValue
+									Erg = getPaths(Erg,humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
+									instances[index]['tick'][0] = time.time()
+							if temperatureKey:
+								temperatureRaw = i['sensor']['data'][1]['raw']
+								temperatureRate = i['sensor']['data'][1]['rate']
+								temperatureOffset = i['sensor']['data'][1]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][1] > temperatureRate:
+									try: temperatureValue = round(i['object'].temperature,1)
+									except: temperatureValue = i['object'].temperature
+									try:temperatureValue2 = float(temperatureValue)+273.15
+									except: temperatureValue2 = ''
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									instances[index]['tick'][1] = time.time()
+
+						elif i['type'] == 'LPS3X':
+							pressureKey = i['sensor']['data'][0]['SKkey']
+							temperatureKey = i['sensor']['data'][1]['SKkey']
+							if pressureKey:
+								pressureRaw = i['sensor']['data'][0]['raw']
+								pressureRate = i['sensor']['data'][0]['rate']
+								pressureOffset = i['sensor']['data'][0]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][0] > pressureRate:
+									try: pressureValue = round(i['object'].pressure,2)
+									except: pressureValue = i['object'].pressure
+									try: pressureValue2 = float(pressureValue)*100
+									except: pressureValue2 = ''
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									instances[index]['tick'][0] = time.time()
+							if temperatureKey:
+								temperatureRaw = i['sensor']['data'][1]['raw']
+								temperatureRate = i['sensor']['data'][1]['rate']
+								temperatureOffset = i['sensor']['data'][1]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][1] > temperatureRate:
+									try: temperatureValue = round(i['object'].temperature,1)
+									except: temperatureValue = i['object'].temperature
+									try: temperatureValue2 = float(temperatureValue)+273.15
+									except: temperatureValue2 = ''
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									instances[index]['tick'][1] = time.time()
+
+						elif i['type'] == 'MS5607-02BA03':
+							pressureKey = i['sensor']['data'][0]['SKkey']
+							temperatureKey = i['sensor']['data'][1]['SKkey']
+							if pressureKey:
+								pressureRaw = i['sensor']['data'][0]['raw']
+								pressureRate = i['sensor']['data'][0]['rate']
+								pressureOffset = i['sensor']['data'][0]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][0] > pressureRate:
+									dig_temperature = i['object'].getDigitalTemperature()
+									dig_pressure = i['object'].getDigitalPressure()
+									pressure = i['object'].convertPressureTemperature(dig_pressure, dig_temperature)
+									try: pressureValue = round(pressure,2)
+									except: pressureValue = pressure
+									pressureValue2 = pressureValue
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									instances[index]['tick'][0] = time.time()
+							if temperatureKey:
+								temperatureRaw = i['sensor']['data'][1]['raw']
+								temperatureRate = i['sensor']['data'][1]['rate']
+								temperatureOffset = i['sensor']['data'][1]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][1] > temperatureRate:
+									try: temperatureValue = round(i['object'].getTemperature(),1)
+									except: temperatureValue = i['object'].getTemperature()
+									try: temperatureValue2 = float(temperatureValue)+273.15
+									except: temperatureValue2 = ''
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									instances[index]['tick'][1] = time.time()
+
+						elif i['type'] == 'BH1750':
+							illuminanceKey = i['sensor']['data'][0]['SKkey']
+							if illuminanceKey:
+								illuminanceRaw = i['sensor']['data'][0]['raw']
+								illuminanceRate = i['sensor']['data'][0]['rate']
+								illuminanceOffset = i['sensor']['data'][0]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][0] > illuminanceRate:
+									try: illuminanceValue = round(i['object'].lux,2)
+									except: illuminanceValue = i['object'].lux
+									illuminanceValue2 = illuminanceValue
+									Erg = getPaths(Erg,illuminanceValue,illuminanceValue2,illuminanceKey,illuminanceOffset,illuminanceRaw)
+									instances[index]['tick'][0] = time.time()
+
+						elif i['type'] == 'INA260':
+							voltageKey = i['sensor']['data'][0]['SKkey']
+							currentKey = i['sensor']['data'][1]['SKkey']
+							powerKey = i['sensor']['data'][2]['SKkey']
+							if voltageKey:
+								voltageRaw = i['sensor']['data'][0]['raw']
+								voltageRate = i['sensor']['data'][0]['rate']
+								voltageOffset = i['sensor']['data'][0]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][0] > voltageRate:
+									try: voltageValue = round(i['object'].voltage,2)
+									except: voltageValue = i['object'].voltage
+									voltageValue2 = voltageValue
+									Erg = getPaths(Erg,voltageValue,voltageValue2,voltageKey,voltageOffset,voltageRaw)
+									instances[index]['tick'][0] = time.time()
+							if currentKey:
+								currentRaw = i['sensor']['data'][1]['raw']
+								currentRate = i['sensor']['data'][1]['rate']
+								currentOffset = i['sensor']['data'][1]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][1] > currentRate:
+									try: currentValue = round(i['object'].current,2)
+									except: currentValue = i['object'].current
+									try: currentValue2 = float(currentValue)/1000
+									except: currentValue2 = ''
+									Erg = getPaths(Erg,currentValue,currentValue2,currentKey,currentOffset,currentRaw)
+									instances[index]['tick'][1] = time.time()
+							if powerKey:
+								powerRaw = i['sensor']['data'][2]['raw']
+								powerRate = i['sensor']['data'][2]['rate']
+								powerOffset = i['sensor']['data'][2]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][2] > powerRate:
+									try: powerValue = round(i['object'].power,2)
+									except: powerValue = i['object'].power
+									try: powerValue2 = float(powerValue)/1000
+									except: powerValue2 = ''
+									Erg = getPaths(Erg,powerValue,powerValue2,powerKey,powerOffset,powerRaw)
+									instances[index]['tick'][2] = time.time()
+
+						elif i['type'] == 'INA219':
+							busvoltageKey = i['sensor']['data'][0]['SKkey']
+							shuntvoltageKey = i['sensor']['data'][1]['SKkey']
+							currentKey = i['sensor']['data'][2]['SKkey']
+							powerKey = i['sensor']['data'][3]['SKkey']
+							if busvoltageKey:
+								busvoltageRaw = i['sensor']['data'][0]['raw']
+								busvoltageRate = i['sensor']['data'][0]['rate']
+								busvoltageOffset = i['sensor']['data'][0]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][0] > busvoltageRate:
+									try: busvoltageValue = round(i['object'].bus_voltage,2)
+									except: busvoltageValue = i['object'].bus_voltage
+									busvoltageValue2 = busvoltageValue
+									Erg = getPaths(Erg,busvoltageValue,busvoltageValue2,busvoltageKey,busvoltageOffset,busvoltageRaw)
+									instances[index]['tick'][0] = time.time()
+							if shuntvoltageKey:
+								shuntvoltageRaw = i['sensor']['data'][1]['raw']
+								shuntvoltageRate = i['sensor']['data'][1]['rate']
+								shuntvoltageOffset = i['sensor']['data'][1]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][1] > shuntvoltageRate:
+									try: shuntvoltageValue = round(i['object'].shunt_voltage,2)
+									except: shuntvoltageValue = i['object'].shunt_voltage
+									shuntvoltageValue2 = shuntvoltageValue
+									Erg = getPaths(Erg,shuntvoltageValue,shuntvoltageValue2,shuntvoltageKey,shuntvoltageOffset,shuntvoltageRaw)
+									instances[index]['tick'][1] = time.time()
+							if currentKey:
+								currentRaw = i['sensor']['data'][2]['raw']
+								currentRate = i['sensor']['data'][2]['rate']
+								currentOffset = i['sensor']['data'][2]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][2] > currentRate:
+									try: currentValue = round(i['object'].current,2)
+									except: currentValue = i['object'].current
+									try: currentValue2 = float(currentValue)/1000
+									except: currentValue2 = ''
+									Erg = getPaths(Erg,currentValue,currentValue2,currentKey,currentOffset,currentRaw)
+									instances[index]['tick'][2] = time.time()
+							if powerKey:
+								powerRaw = i['sensor']['data'][3]['raw']
+								powerRate = i['sensor']['data'][3]['rate']
+								powerOffset = i['sensor']['data'][3]['offset']
+								tick0 = time.time()
+								if tick0 - i['tick'][3] > powerRate:
+									try: powerValue = round(i['object'].power,2)
+									except: powerValue = i['object'].power
+									try: powerValue2 = float(powerValue)/1000
+									except: powerValue2 = ''
+									Erg = getPaths(Erg,powerValue,powerValue2,powerKey,powerOffset,powerRaw)
+									instances[index]['tick'][3] = time.time()
+
+						elif i['type'] == 'ADS1115' or i['type'] == 'ADS1015':
+							for ii in range(4):
+								A0key = i['sensor']['data'][ii]['SKkey']
+								if A0key:
+									A0raw = i['sensor']['data'][ii]['raw']
+									A0Rate = i['sensor']['data'][ii]['rate']
+									A0offset = i['sensor']['data'][ii]['offset']
+									A0Ranges = i['sensor']['data'][ii]['ranges']
+									tick0 = time.time()
+									if tick0 - i['tick'][ii] > A0Rate:
+										A0value = i['sensor']['data'][ii]['object'].value
+										A0voltage = i['sensor']['data'][ii]['object'].voltage
+										Erg = getPaths2(Erg, A0Ranges, A0value, A0voltage, A0key, A0offset, A0raw)
+										instances[index]['tick'][ii] = time.time()
+
+					except Exception as e:
+						if debug: print('Error reading '+i['name']+': '+str(e))
+					if Erg:		
+						SignalK = {"updates":[{"$source":"OpenPlotter.I2C."+i['name'],"values":Erg}]}
+						SignalK = json.dumps(SignalK)
+						try: ws.send(SignalK+'\r\n')
+						except Exception as e:
+							if debug: print('Error sending data to Signal K server:'+str(e))
+							if ws: ws.close()
+							ws = False
+
+
+if __name__ == '__main__':
+	main()
+
+'''
 def work_ADS1115(name,data):
 
-	def getRanges(settings):
-		ranges = []
-		b = OrderedDict(sorted(settings.items()))
-		for i in b:
-			if 'range' in i:
-				c = b[i].split('->')
-				if len(c) == 2:
-					try:
-						d = c[0].split('|')
-						try:
-							e = c[1].split('|')
-							f = [float(e[0].lstrip()),float(e[1].lstrip())]
-						except: f = c[1].lstrip()
-						ranges.append([[int(d[0].lstrip()),int(d[1].lstrip())],f])
-					except: pass
-		return ranges
 
-	def getPaths(ranges,value,voltage,key,offset,raw):
-		Erg = ''
-		if ranges:
-			result = ''
-			for i,v in enumerate(ranges):
-				r1 = ranges[i][0]
-				r2 = ranges[i][1]
-				if value >= r1[0] and value <= r1[1]:
-						if type(r2) == list:
-							a = r1[1]-r1[0]
-							b = value-r1[0]
-							pc = b*100/a
-							c = r2[1]-r2[0]
-							d = c*pc/100
-							result = r2[0]+d
-						else: result = r2
-			if result:
-				try:
-					result2 = float(result)
-					Erg += '{"path": "'+key+'","value":'+str(offset+result2)+'},'
-				except: Erg += '{"path": "'+key+'","value":"'+str(result)+'"},'
-			else: Erg += '{"path": "'+key+'","value": null},'
-		if raw and voltage and value:
-			value = '{"value":'+str(value)+',"voltage":'+str(voltage)+'}'
-			Erg += '{"path": "'+key+'.raw","value":'+value+'},'
-		return Erg
+
+
 
 	A0key = data['data'][0]['SKkey']
 	A1key = data['data'][1]['SKkey']
@@ -287,345 +743,4 @@ def work_ADS1115(name,data):
 					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
 			except Exception as e: print ("ADS1115 reading failed: "+str(e))
 
-def work_HTU21D(name,data):
-
-	def getPaths(value,value2,key,offset,raw):
-		Erg = ''
-		if value2:
-			try:
-				value3 = float(value2)
-				Erg += '{"path": "'+key+'","value":'+str(offset+value3)+'},'
-			except: Erg += '{"path": "'+key+'","value":"'+str(value2)+'"},'
-		else: Erg += '{"path": "'+key+'","value": null},'
-		if raw and value:
-			try:
-				value4 = float(value)
-				Erg += '{"path": "'+key+'.raw","value":'+str(value4)+'},'
-			except: Erg += '{"path": "'+key+'.raw","value":"'+str(value)+'"},'
-		return Erg
-
-	humidityKey = data['data'][0]['SKkey']
-	temperatureKey = data['data'][1]['SKkey']
-
-	if humidityKey or temperatureKey:
-		from adafruit_htu21d import HTU21D
-
-		address = data['address']
-		i2c = busio.I2C(board.SCL, board.SDA)
-		sensor = HTU21D(i2c, address=int(address, 16))
-
-		if humidityKey: 
-			humidityRaw = data['data'][0]['raw']
-			humidityRate = data['data'][0]['rate']
-			humidityOffset = data['data'][0]['offset']
-		if temperatureKey: 
-			temperatureRaw = data['data'][1]['raw']
-			temperatureRate = data['data'][1]['rate']
-			temperatureOffset = data['data'][1]['offset']
-
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		port = data['port']
-		tick1 = time.time()
-		tick2 = tick1
-		while True:
-			time.sleep(0.1)
-			try:
-				Erg=''
-				if humidityKey:
-					tick0 = time.time()
-					if tick0 - tick1 > humidityRate:
-						try: humidityValue = round(sensor.relative_humidity,1)
-						except: humidityValue = sensor.relative_humidity
-						humidityValue2 = humidityValue
-						Erg += getPaths(humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
-						tick1 = time.time()
-				if temperatureKey:
-					tick0 = time.time()
-					if tick0 - tick2 > temperatureRate:
-						try: temperatureValue = round(sensor.temperature,1)
-						except: temperatureValue = sensor.temperature
-						try:temperatureValue2 = float(temperatureValue)+273.15
-						except: temperatureValue2 = ''
-						Erg += getPaths(temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
-						tick2 = time.time()
-				if Erg:		
-					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
-					SignalK+=Erg[0:-1]+']}]}\n'		
-					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
-			except Exception as e: print ("HTU21D reading failed: "+str(e))
-
-def work_BMP280(name,data):
-
-	def getPaths(value,value2,key,offset,raw):
-		Erg = ''
-		if value2:
-			try:
-				value3 = float(value2)
-				Erg += '{"path": "'+key+'","value":'+str(offset+value3)+'},'
-			except: Erg += '{"path": "'+key+'","value":"'+str(value2)+'"},'
-		else: Erg += '{"path": "'+key+'","value": null},'
-		if raw and value:
-			try:
-				value4 = float(value)
-				Erg += '{"path": "'+key+'.raw","value":'+str(value4)+'},'
-			except: Erg += '{"path": "'+key+'.raw","value":"'+str(value)+'"},'
-		return Erg
-
-	pressureKey = data['data'][0]['SKkey']
-	temperatureKey = data['data'][1]['SKkey']
-
-	if pressureKey or temperatureKey:
-		import adafruit_bmp280
-
-		address = data['address']
-		i2c = busio.I2C(board.SCL, board.SDA)
-		sensor = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, address=int(address, 16))
-
-		if pressureKey: 
-			pressureRaw = data['data'][0]['raw']
-			pressureRate = data['data'][0]['rate']
-			pressureOffset = data['data'][0]['offset']
-		if temperatureKey: 
-			temperatureRaw = data['data'][1]['raw']
-			temperatureRate = data['data'][1]['rate']
-			temperatureOffset = data['data'][1]['offset']
-
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		port = data['port']
-		tick1 = time.time()
-		tick2 = tick1
-		while True:
-			time.sleep(0.1)
-			try:
-				Erg=''
-				if pressureKey:
-					tick0 = time.time()
-					if tick0 - tick1 > pressureRate:
-						try: pressureValue = round(sensor.pressure,2)
-						except: pressureValue = sensor.pressure
-						try: pressureValue2 = float(pressureValue)*100
-						except: pressureValue2 = ''
-						Erg += getPaths(pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
-						tick1 = time.time()
-				if temperatureKey:
-					tick0 = time.time()
-					if tick0 - tick2 > temperatureRate:
-						try: temperatureValue = round(sensor.temperature,1)
-						except: temperatureValue = sensor.temperature
-						try: temperatureValue2 = float(temperatureValue)+273.15
-						except: temperatureValue2 = ''
-						Erg += getPaths(temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
-						tick2 = time.time()
-				if Erg:		
-					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
-					SignalK+=Erg[0:-1]+']}]}\n'		
-					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
-			except Exception as e: print ("BMP280 reading failed: "+str(e))
-
-def work_BMP3XX(name,data):
-
-	def getPaths(value,value2,key,offset,raw):
-		Erg = ''
-		if value2:
-			try:
-				value3 = float(value2)
-				Erg += '{"path": "'+key+'","value":'+str(offset+value3)+'},'
-			except: Erg += '{"path": "'+key+'","value":"'+str(value2)+'"},'
-		else: Erg += '{"path": "'+key+'","value": null},'
-		if raw and value:
-			try:
-				value4 = float(value)
-				Erg += '{"path": "'+key+'.raw","value":'+str(value4)+'},'
-			except: Erg += '{"path": "'+key+'.raw","value":"'+str(value)+'"},'
-		return Erg
-
-	pressureKey = data['data'][0]['SKkey']
-	temperatureKey = data['data'][1]['SKkey']
-
-	if pressureKey or temperatureKey:
-		import adafruit_bmp3xx
-
-		address = data['address']
-		i2c = busio.I2C(board.SCL, board.SDA)
-		sensor = adafruit_bmp3xx.BMP3XX_I2C(i2c, address=int(address, 16))
-
-		pressure_oversampling = 8
-		if 'sensorSettings' in data:
-			if 'pressure_oversampling' in data['sensorSettings']:
-				try: 
-					pressure_oversampling = int(data['sensorSettings']['pressure_oversampling'])
-				except: pass
-		temperature_oversampling = 2
-		if 'sensorSettings' in data:
-			if 'temperature_oversampling' in data['sensorSettings']:
-				try: 
-					temperature_oversampling = int(data['sensorSettings']['temperature_oversampling'])
-				except: pass
-		sensor.pressure_oversampling = pressure_oversampling
-		sensor.temperature_oversampling = temperature_oversampling
-
-		if pressureKey: 
-			pressureRaw = data['data'][0]['raw']
-			pressureRate = data['data'][0]['rate']
-			pressureOffset = data['data'][0]['offset']
-		if temperatureKey: 
-			temperatureRaw = data['data'][1]['raw']
-			temperatureRate = data['data'][1]['rate']
-			temperatureOffset = data['data'][1]['offset']
-
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		port = data['port']
-		tick1 = time.time()
-		tick2 = tick1
-		while True:
-			time.sleep(0.1)
-			try:
-				Erg=''
-				if pressureKey:
-					tick0 = time.time()
-					if tick0 - tick1 > pressureRate:
-						try: pressureValue = round(sensor.pressure,2)
-						except: pressureValue = sensor.pressure
-						try: pressureValue2 = float(pressureValue)*100
-						except: pressureValue2 = ''
-						Erg += getPaths(pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
-						tick1 = time.time()
-				if temperatureKey:
-					tick0 = time.time()
-					if tick0 - tick2 > temperatureRate:
-						try: temperatureValue = round(sensor.temperature,1)
-						except: temperatureValue = sensor.temperature
-						try: temperatureValue2 = float(temperatureValue)+273.15
-						except: temperatureValue2 = ''
-						Erg += getPaths(temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
-						tick2 = time.time()
-				if Erg:		
-					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
-					SignalK+=Erg[0:-1]+']}]}\n'		
-					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
-			except Exception as e: print ("BMP3XX reading failed: "+str(e))
-
-def work_INA260(name,data):
-
-	def getPaths(value,value2,key,offset,raw):
-		Erg = ''
-		if value2:
-			try:
-				value3 = float(value2)
-				Erg += '{"path": "'+key+'","value":'+str(offset+value3)+'},'
-			except: Erg += '{"path": "'+key+'","value":"'+str(value2)+'"},'
-		else: Erg += '{"path": "'+key+'","value": null},'
-		if raw and value:
-			try:
-				value4 = float(value)
-				Erg += '{"path": "'+key+'.raw","value":'+str(value4)+'},'
-			except: Erg += '{"path": "'+key+'.raw","value":"'+str(value)+'"},'
-		return Erg
-
-	voltageKey = data['data'][0]['SKkey']
-	currentKey = data['data'][1]['SKkey']
-	powerKey = data['data'][2]['SKkey']
-
-	if voltageKey or currentKey or powerKey:
-		import adafruit_ina260
-
-		address = data['address']
-		i2c = busio.I2C(board.SCL, board.SDA)
-		sensor = aadafruit_ina260.INA260(i2c, address=int(address, 16))
-
-		if voltageKey: 
-			voltageRaw = data['data'][0]['raw']
-			voltageRate = data['data'][0]['rate']
-			voltageOffset = data['data'][0]['offset']
-		if currentKey: 
-			currentRaw = data['data'][1]['raw']
-			currentRate = data['data'][1]['rate']
-			currentOffset = data['data'][1]['offset']
-		if powerKey: 
-			powerRaw = data['data'][2]['raw']
-			powerRate = data['data'][2]['rate']
-			powerOffset = data['data'][2]['offset']
-
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		port = data['port']
-		tick1 = time.time()
-		tick2 = tick1
-		tick3 = tick1
-		while True:
-			time.sleep(0.1)
-			try:
-				Erg=''
-				if voltageKey:
-					tick0 = time.time()
-					if tick0 - tick1 > voltageRate:
-						try: voltageValue = round(sensor.voltage,4)
-						except: voltageValue = sensor.voltage
-						try: voltageValue2 = float(voltageValue)
-						except: voltageValue2 = ''
-						Erg += getPaths(voltageValue,voltageValue2,voltageKey,voltageOffset,voltageRaw)
-						tick1 = time.time()
-				if currentKey:
-					tick0 = time.time()
-					if tick0 - tick2 > currentRate:
-						try: currentValue = round(sensor.current,2)
-						except: currentValue = sensor.current
-						try: currentValue2 = float(currentValue)/1000
-						except: currentValue2 = ''
-						Erg += getPaths(currentValue,currentValue2,currentKey,currentOffset,currentRaw)
-						tick2 = time.time()
-				if powerKey:
-					tick0 = time.time()
-					if tick0 - tick3 > powerRate:
-						try: powerValue = round(sensor.power,2)
-						except: powerValue = sensor.power
-						try: powerValue2 = float(powerValue)/1000
-						except: powerValue2 = ''
-						Erg += getPaths(powerValue,powerValue2,powerKey,powerOffset,powerRaw)
-						tick3 = time.time()
-				if Erg:		
-					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
-					SignalK+=Erg[0:-1]+']}]}\n'		
-					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
-			except Exception as e: print ("INA260 reading failed: "+str(e))
-
-def main():
-	conf2 = conf.Conf()
-	active = False
-	try: i2c_sensors=eval(conf2.get('I2C', 'sensors'))
-	except: i2c_sensors=[]
-
-	if i2c_sensors:
-		for i in i2c_sensors:
-			if 'BME280' in i:
-				x1 = threading.Thread(target=work_BME280, args=(i,i2c_sensors[i]), daemon=True)
-				x1.start()
-				active = True
-			elif 'MS5607-02BA03' in i:
-				x2 = threading.Thread(target=work_MS5607, args=(i,i2c_sensors[i]), daemon=True)
-				x2.start()
-				active = True
-			elif 'ADS1115' in i:
-				x3 = threading.Thread(target=work_ADS1115, args=(i,i2c_sensors[i]), daemon=True)
-				x3.start()
-				active = True
-			elif 'HTU21D' in i:
-				x4 = threading.Thread(target=work_HTU21D, args=(i,i2c_sensors[i]), daemon=True)
-				x4.start()
-				active = True
-			elif 'BMP280' in i:
-				x5 = threading.Thread(target=work_BMP280, args=(i,i2c_sensors[i]), daemon=True)
-				x5.start()
-				active = True
-			elif 'BMP3XX' in i:
-				x6 = threading.Thread(target=work_BMP3XX, args=(i,i2c_sensors[i]), daemon=True)
-				x6.start()
-				active = True
-			elif 'INA260' in i:
-				x7 = threading.Thread(target=work_INA260, args=(i,i2c_sensors[i]), daemon=True)
-				x7.start()
-				active = True
-		while active:
-			time.sleep(0.1)
-
-if __name__ == '__main__':
-	main()
+'''

@@ -4,17 +4,21 @@ OpenPlotter app to manage I2C sensors in Raspberry Pi
 
 ### Installing
 
+Install [openplotter-settings](https://github.com/openplotter/openplotter-settings) for **production**.
+
 #### For production
 
-Install [openplotter-settings](https://github.com/openplotter/openplotter-settings) for **production** and just install this app from *OpenPlotter Apps* tab.
+Install I2C from openplotter-settings app.
 
 #### For development
 
-Install [openplotter-settings](https://github.com/openplotter/openplotter-settings) for **development**.
-
 Install openplotter-i2c dependencies:
 
-`sudo apt install i2c-tools`
+`sudo apt install i2c-i2c-tools python3-rpi.gpio`
+
+Clone the repository:
+
+`git clone https://github.com/openplotter/openplotter-i2c`
 
 Make your changes and create the package:
 
@@ -38,7 +42,7 @@ Run:
 
 `openplotter-i2c`
 
-Make your changes and repeat package, installation and post-installation steps to test. Pull request your changes to github and we will check and add them to the next version of the [Debian package](https://launchpad.net/~openplotter/+archive/ubuntu/openplotter).
+Pull request your changes to github and we will check and add them to the next version of the [Debian package](https://cloudsmith.io/~openplotter/repos/openplotter/packages/).
 
 ### Documentation
 

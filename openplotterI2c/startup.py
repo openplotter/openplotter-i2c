@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-# This file is part of Openplotter.
-# Copyright (C) 2019 by sailoog <https://github.com/sailoog/openplotter>
-#                     e-sailing <https://github.com/e-sailing/openplotter>
+# This file is part of OpenPlotter.
+# Copyright (C) 2022 by Sailoog <https://github.com/openplotter/openplotter-i2c>
+#                       e-sailing <https://github.com/e-sailing/openplotter-i2c>
 # Openplotter is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
@@ -15,19 +15,34 @@
 # You should have received a copy of the GNU General Public License
 # along with Openplotter. If not, see <http://www.gnu.org/licenses/>.
 
-import subprocess, os, sys, ujson
+import subprocess, os, sys, time
 from openplotterSettings import language
-from openplotterSettings import platform
+from openplotterSignalkInstaller import connections
 
 class Start():
 	def __init__(self, conf, currentLanguage):
 		self.conf = conf
-		self.initialMessage = ''
+		self.initialMessage = _('Starting I2C sensors...')
 		
 	def start(self):
 		green = ''
 		black = ''
 		red = ''
+
+		if self.conf.get('GENERAL', 'rescue') != 'yes':
+			data = self.conf.get('I2C', 'sensors')
+			try: i2c_sensors = eval(data)
+			except: i2c_sensors = {}
+			if i2c_sensors:
+				subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
+				subprocess.Popen('openplotter-i2c-read')
+				time.sleep(1)
+				black = _('I2C sensors started')
+			else:
+				black = _('No sensors defined')
+		else:
+			black = _('I2C is in rescue mode')
+			subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
 
 		return {'green': green,'black': black,'red': red}
 
@@ -38,9 +53,7 @@ class Check():
 		language.Language(currentdir,'openplotter-i2c',currentLanguage)
 		self.initialMessage = _('Checking I2C sensors...')
 
-
 	def check(self):
-		platform2 = platform.Platform()
 		green = ''
 		black = ''
 		red = ''
@@ -51,33 +64,59 @@ class Check():
 
 		try:
 			out = subprocess.check_output('ls /dev/i2c*', shell=True).decode(sys.stdin.encoding)
-			if '/dev/i2c-0' in out: red = _('Your Raspberry Pi is too old.')
-			if '/dev/i2c-1' in out: black = _('I2C enabled')
+			if '/dev/i2c-0' in out: 
+				msg = _('Your Raspberry Pi is too old.')
+				if red: red += '\n   '+msg
+				else: red = msg
+			if '/dev/i2c-1' in out: 
+				msg = _('I2C enabled')
+				if not black: black = msg
+				else: black+= ' | '+msg
 		except:
-			if i2c_sensors: red = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
-			else: black = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
-				
-		try:
-			subprocess.check_output(['systemctl', 'is-active', 'openplotter-i2c-read.service']).decode(sys.stdin.encoding)
-			green = _('running')
-		except: black += _(' | not running')
+			if i2c_sensors: 
+				msg = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
+				if red: red += '\n   '+msg
+				else: red = msg
+			else: 
+				msg = _('I2C disabled')
+				if not black: black = msg
+				else: black+= ' | '+msg
 
-		try:
-			setting_file = platform2.skDir+'/settings.json'
-			with open(setting_file) as data_file:
-				skdata = ujson.load(data_file)
-		except: skdata = {}
+		if self.conf.get('GENERAL', 'rescue') == 'yes':
+			subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
+			msg = _('I2C is in rescue mode')
+			if red: red += '\n   '+msg
+			else: red = msg
+		else:
+			if i2c_sensors:
+				test = subprocess.check_output(['ps','aux']).decode(sys.stdin.encoding)
+				if 'openplotter-i2c-read' in test: 
+					msg = _('openplotter-i2c-read running')
+					if not green: green = msg
+					else: green+= ' | '+msg
+				else:
+					subprocess.Popen('openplotter-i2c-read')
+					time.sleep(1)
+					test = subprocess.check_output(['ps','aux']).decode(sys.stdin.encoding)
+					if 'openplotter-i2c-read' in test: 
+						msg = _('openplotter-i2c-read running')
+						if not green: green = msg
+						else: green+= ' | '+msg
+					else:
+						msg = _('openplotter-i2c-read not running')
+						if red: red += '\n   '+msg
+						else: red = msg
 
-		for i in i2c_sensors:
-			exists = False
-			if 'pipedProviders' in skdata:
-				for ii in skdata['pipedProviders']:
-					if ii['pipeElements'][0]['options']['type']=='SignalK':
-						if ii['pipeElements'][0]['options']['subOptions']['type']=='udp':
-							if ii['pipeElements'][0]['options']['subOptions']['port'] == str(i2c_sensors[i]['port']): exists = True
-			if not exists: 
-				if not red: red = _('There is no Signal K connection for sensor: ')+ i
-				else: red += '\n'+_('There is no Signal K connection for sensor: ')+ i
+		#access
+		skConnections = connections.Connections('I2C')
+		result = skConnections.checkConnection()
+		if result[0] == 'pending' or result[0] == 'error' or result[0] == 'repeat' or result[0] == 'permissions':
+			if not red: red = result[1]
+			else: red+= '\n    '+result[1]
+		if result[0] == 'approved' or result[0] == 'validated':
+			msg = _('Access to Signal K server validated')
+			if not black: black = msg
+			else: black+= ' | '+msg
 
 		return {'green': green,'black': black,'red': red}
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-# This file is part of Openplotter.
-# Copyright (C) 2015 by Sailoog <https://github.com/openplotter/openplotter-i2c>
-#
+# This file is part of OpenPlotter.
+# Copyright (C) 2022 by Sailoog <https://github.com/openplotter/openplotter-i2c>
+
 # Openplotter is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Openplotter. If not, see <http://www.gnu.org/licenses/>.
+
 import os, subprocess
 from openplotterSettings import conf
 from openplotterSettings import language
@@ -24,14 +25,6 @@ def main():
 	currentLanguage = conf2.get('GENERAL', 'lang')
 	language.Language(currentdir,'openplotter-i2c',currentLanguage)
 
-	print(_('Removing openplotter-i2c-read service...'))
-	try:
-		subprocess.call(['systemctl', 'disable', 'openplotter-i2c-read'])
-		subprocess.call(['systemctl', 'stop', 'openplotter-i2c-read'])
-		subprocess.call(['rm', '-f', '/etc/systemd/system/openplotter-i2c-read.service'])
-		subprocess.call(['systemctl', 'daemon-reload'])
-		print(_('DONE'))
-	except Exception as e: print(_('FAILED: ')+str(e))
 
 	print(_('Removing version...'))
 	try:

@@ -185,9 +185,10 @@ class MyFrame(wx.Frame):
 		self.listSensors.InsertColumn(5, _('Signal K key'), width=220)
 		self.listSensors.InsertColumn(6, _('Rate'), width=40)
 		self.listSensors.InsertColumn(7, _('Offset'), width=50)
-		self.listSensors.InsertColumn(8, _('Raw'), width=40)
-		self.listSensors.InsertColumn(9, _('Sensor Settings'), width=200)
-		self.listSensors.InsertColumn(10, _('Magnitude Settings'), width=200)
+		self.listSensors.InsertColumn(8, _('Scaling factor'), width=100)
+		self.listSensors.InsertColumn(9, _('Raw'), width=40)
+		self.listSensors.InsertColumn(10, _('Sensor Settings'), width=200)
+		self.listSensors.InsertColumn(11, _('Magnitude Settings'), width=200)
 		self.listSensors.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onListSensorsSelected)
 		self.listSensors.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.onListSensorsDeselected)
 		self.listSensors.SetTextColour(wx.BLACK)
@@ -273,6 +274,8 @@ class MyFrame(wx.Frame):
 				SKkey = self.i2c_sensors[name]['data'][index]['SKkey']
 				rate = self.i2c_sensors[name]['data'][index]['rate']
 				offset = self.i2c_sensors[name]['data'][index]['offset']
+				if 'factor' in self.i2c_sensors[name]['data'][index]: factor = self.i2c_sensors[name]['data'][index]['factor']
+				else: factor = 1
 				if 'raw' in self.i2c_sensors[name]['data'][index]: raw = self.i2c_sensors[name]['data'][index]['raw']
 				else: raw = False
 				if raw: raw2 = _('yes')
@@ -281,7 +284,7 @@ class MyFrame(wx.Frame):
 				else: sensorSettings = ''
 				if 'magnitudeSettings' in self.i2c_sensors[name]['data'][index]: magnitudeSettings = self.i2c_sensors[name]['data'][index]['magnitudeSettings']
 				else: magnitudeSettings = ''
-				self.listSensors.Append([str(c),name, address, str(channel), nameMagnitude, SKkey, str(rate), str(offset), raw2, sensorSettings, magnitudeSettings])
+				self.listSensors.Append([str(c),name, address, str(channel), nameMagnitude, SKkey, str(rate), str(offset), str(factor), raw2, sensorSettings, magnitudeSettings])
 				c = c + 1
 				if SKkey: self.listSensors.SetItemBackgroundColour(self.listSensors.GetItemCount()-1,(255,215,0))
 
@@ -339,7 +342,7 @@ class MyFrame(wx.Frame):
 			if 'magnitudeSettings' in self.i2c_sensors_def[sensor]: magnitudeSettings = self.i2c_sensors_def[sensor]['magnitudeSettings']
 			data = []
 			for SKkey in self.i2c_sensors_def[sensor]['SKkeys']:
-				data.append({'SKkey': SKkey, 'rate': 1.0, 'offset': 0.0, 'raw': False, 'magnitudeSettings':magnitudeSettings})
+				data.append({'SKkey': SKkey, 'rate': 1.0, 'offset': 0.0, 'factor': 1, 'raw': False, 'magnitudeSettings':magnitudeSettings})
 			new_sensor = {'type': sensor,'address': address, 'channel': channel, 'sensorSettings':sensorSettings2, 'data': data}
 			self.i2c_sensors[name] = new_sensor
 			self.OnApply()
@@ -361,13 +364,15 @@ class MyFrame(wx.Frame):
 		rate = rate.GetText()
 		offset = self.listSensors.GetItem(selected, 7)
 		offset = offset.GetText()
+		factor = self.listSensors.GetItem(selected, 8)
+		factor = factor.GetText()
 		raw = False
 		if 'raw' in self.i2c_sensors[name]['data'][int(index)]:
 			raw = self.i2c_sensors[name]['data'][int(index)]['raw']
 		magnitudeSettings = ''
 		if 'magnitudeSettings' in self.i2c_sensors[name]['data'][int(index)]:
 			magnitudeSettings = self.i2c_sensors[name]['data'][int(index)]['magnitudeSettings']
-		dlg = editI2c(name,magn,sk,rate,offset,raw,magnitudeSettings)
+		dlg = editI2c(name,magn,sk,rate,offset,factor,raw,magnitudeSettings)
 		res = dlg.ShowModal()
 		if res == wx.ID_OK:
 			sk = str(dlg.SKkey.GetValue())
@@ -375,6 +380,8 @@ class MyFrame(wx.Frame):
 			if not rate: rate = 1.0
 			offset = dlg.offset.GetValue()
 			if not offset: offset = 0.0
+			factor = dlg.factor.GetValue()
+			if not factor: factor = 1
 			raw = dlg.raw.GetValue()
 			magnitudeSettings = dlg.settings.GetValue()
 			magnitudeSettings2 = {}
@@ -387,7 +394,7 @@ class MyFrame(wx.Frame):
 						x3 = x1[1].lstrip()
 						magnitudeSettings2[x2] = x3
 					except: pass
-			self.i2c_sensors[name]['data'][int(index)] = {'SKkey': sk, 'rate': float(rate), 'offset': float(offset), 'raw': raw, 'magnitudeSettings': magnitudeSettings2}
+			self.i2c_sensors[name]['data'][int(index)] = {'SKkey': sk, 'rate': float(rate), 'offset': float(offset), 'factor': float(factor), 'raw': raw, 'magnitudeSettings': magnitudeSettings2}
 			self.OnApply()
 			self.readSensors()
 		dlg.Destroy()
@@ -530,7 +537,7 @@ class addI2c(wx.Dialog):
 ################################################################################
 
 class editI2c(wx.Dialog):
-	def __init__(self,name,magn,sk,rate,offset,raw,magnitudeSettings):
+	def __init__(self,name,magn,sk,rate,offset,factor,raw,magnitudeSettings):
 		self.platform = platform.Platform()
 		title = _('Edit')+(' '+name+' - '+magn)
 
@@ -561,6 +568,10 @@ class editI2c(wx.Dialog):
 		self.offset = wx.TextCtrl(panel)
 		self.offset.SetValue(offset)
 
+		self.factor_label = wx.StaticText(panel, label=_('Scaling factor'))
+		self.factor = wx.TextCtrl(panel)
+		self.factor.SetValue(factor)
+
 		self.settingsLabel = wx.StaticText(panel, label=_('Settings'))
 		self.settings = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.HSCROLL)
 		if magnitudeSettings:
@@ -579,9 +590,12 @@ class editI2c(wx.Dialog):
 		vbox1 = wx.BoxSizer(wx.VERTICAL)
 		vbox1.Add(self.rate_label, 0, wx.ALL | wx.EXPAND, 5)
 		vbox1.Add(self.rate, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
-		vbox1.AddSpacer(10)
+		vbox1.AddSpacer(5)
 		vbox1.Add(self.offset_label, 0, wx.ALL| wx.EXPAND, 5)
 		vbox1.Add(self.offset, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
+		vbox1.AddSpacer(5)
+		vbox1.Add(self.factor_label, 0, wx.ALL| wx.EXPAND, 5)
+		vbox1.Add(self.factor, 0, wx.RIGHT | wx.LEFT | wx.EXPAND, 5)
 
 		vbox2 = wx.BoxSizer(wx.VERTICAL)
 		vbox2.Add(self.settingsLabel, 0, wx.ALL | wx.EXPAND, 5)

@@ -21,15 +21,15 @@ from openplotterSettings import platform
 from websocket import create_connection
 from collections import OrderedDict
 
-def getPaths(Erg,value,value2,key,offset,raw):
-	if value2: Erg.append({"path":key,"value":offset+value2})
+def getPaths(Erg,value,value2,key,offset,factor,raw):
+	if value2: Erg.append({"path":key,"value":offset+(value2*factor)})
 	else: Erg.append({"path":key,"value":None})
 	if raw:
 		if value: Erg.append({"path":key+'.raw',"value":value})
 		else: Erg.append({"path":key+'.raw',"value":None})
 	return Erg
 
-def getPaths2(Erg,ranges,value,voltage,key,offset,raw):
+def getPaths2(Erg,ranges,value,voltage,key,offset,factor,raw):
 	if ranges:
 		result = ''
 		for i,v in enumerate(ranges):
@@ -44,7 +44,7 @@ def getPaths2(Erg,ranges,value,voltage,key,offset,raw):
 						d = c*pc/100
 						result = r2[0]+d
 					else: result = r2
-		if result: Erg.append({"path":key,"value":offset+result})
+		if result: Erg.append({"path":key,"value":offset+(result*factor)})
 		else: Erg.append({"path":key,"value":None})
 	if raw and voltage and value:
 		if voltage: rawvoltage = voltage
@@ -275,47 +275,51 @@ def main():
 								pressureRaw = i['sensor']['data'][0]['raw']
 								pressureRate = i['sensor']['data'][0]['rate']
 								pressureOffset = i['sensor']['data'][0]['offset']
+								pressureFactor = i['sensor']['data'][0]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][0] > pressureRate:
 									try: pressureValue = round(i['object'].pressure,2)
 									except: pressureValue = i['object'].pressure
 									try: pressureValue2 = float(pressureValue)*100
 									except: pressureValue2 = ''
-									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureFactor,pressureRaw)
 									instances[index]['tick'][0] = time.time()
 							if temperatureKey:
 								temperatureRaw = i['sensor']['data'][1]['raw']
 								temperatureRate = i['sensor']['data'][1]['rate']
 								temperatureOffset = i['sensor']['data'][1]['offset']
+								temperatureFactor = i['sensor']['data'][1]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][1] > temperatureRate:
 									try: temperatureValue = round(i['object'].temperature,1)
 									except: temperatureValue = i['object'].temperature
 									try: temperatureValue2 = float(temperatureValue)+273.15
 									except: temperatureValue2 = ''
-									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureFactor,temperatureRaw)
 									instances[index]['tick'][1] = time.time()
 							if humidityKey:
 								humidityRaw = i['sensor']['data'][2]['raw']
 								humidityRate = i['sensor']['data'][2]['rate']
 								humidityOffset = i['sensor']['data'][2]['offset']
+								humidityFactor = i['sensor']['data'][2]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][2] > humidityRate:
 									try: humidityValue = round(i['object'].humidity,2)
 									except: humidityValue = i['object'].humidity
 									humidityValue2 = humidityValue
-									Erg = getPaths(Erg,humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
+									Erg = getPaths(Erg,humidityValue,humidityValue2,humidityKey,humidityOffset,humidityFactor,humidityRaw)
 									instances[index]['tick'][2] = time.time()
 							if gasKey:
 								gasRaw = i['sensor']['data'][3]['raw']
 								gasRate = i['sensor']['data'][3]['rate']
 								gasOffset = i['sensor']['data'][3]['offset']
+								gasFactor = i['sensor']['data'][3]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][3] > gasRate:
 									try: gasValue = round(i['object'].gas,2)
 									except: gasValue = i['object'].gas
 									gasValue2 = gasValue
-									Erg = getPaths(Erg,gasValue,gasValue2,gasKey,gasOffset,gasRaw)
+									Erg = getPaths(Erg,gasValue,gasValue2,gasKey,gasOffset,gasFactor,gasRaw)
 									instances[index]['tick'][3] = time.time()
 						
 						elif i['type'] == 'BME280':
@@ -326,36 +330,39 @@ def main():
 								pressureRaw = i['sensor']['data'][0]['raw']
 								pressureRate = i['sensor']['data'][0]['rate']
 								pressureOffset = i['sensor']['data'][0]['offset']
+								pressureFactor = i['sensor']['data'][0]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][0] > pressureRate:
 									try: pressureValue = round(i['object'].pressure,2)
 									except: pressureValue = i['object'].pressure
 									try: pressureValue2 = float(pressureValue)*100
 									except: pressureValue2 = ''
-									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureFactor,pressureRaw)
 									instances[index]['tick'][0] = time.time()
 							if temperatureKey:
 								temperatureRaw = i['sensor']['data'][1]['raw']
 								temperatureRate = i['sensor']['data'][1]['rate']
 								temperatureOffset = i['sensor']['data'][1]['offset']
+								temperatureFactor = i['sensor']['data'][1]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][1] > temperatureRate:
 									try: temperatureValue = round(i['object'].temperature,1)
 									except: temperatureValue = i['object'].temperature
 									try: temperatureValue2 = float(temperatureValue)+273.15
 									except: temperatureValue2 = ''
-									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureFactor,temperatureRaw)
 									instances[index]['tick'][1] = time.time()
 							if humidityKey:
 								humidityRaw = i['sensor']['data'][2]['raw']
 								humidityRate = i['sensor']['data'][2]['rate']
 								humidityOffset = i['sensor']['data'][2]['offset']
+								humidityFactor = i['sensor']['data'][2]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][2] > humidityRate:
 									try: humidityValue = round(i['object'].humidity,1)
 									except: humidityValue = i['object'].humidity
 									humidityValue2 = humidityValue
-									Erg = getPaths(Erg,humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
+									Erg = getPaths(Erg,humidityValue,humidityValue2,humidityKey,humidityOffset,humidityFactor,humidityRaw)
 									instances[index]['tick'][2] = time.time()
 
 						elif i['type'] == 'BMP280':
@@ -365,25 +372,27 @@ def main():
 								pressureRaw = i['sensor']['data'][0]['raw']
 								pressureRate = i['sensor']['data'][0]['rate']
 								pressureOffset = i['sensor']['data'][0]['offset']
+								pressureFactor = i['sensor']['data'][0]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][0] > pressureRate:
 									try: pressureValue = round(i['object'].pressure,2)
 									except: pressureValue = i['object'].pressure
 									try: pressureValue2 = float(pressureValue)*100
 									except: pressureValue2 = ''
-									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureFactor,pressureRaw)
 									instances[index]['tick'][0] = time.time()
 							if temperatureKey:
 								temperatureRaw = i['sensor']['data'][1]['raw']
 								temperatureRate = i['sensor']['data'][1]['rate']
 								temperatureOffset = i['sensor']['data'][1]['offset']
+								temperatureFactor = i['sensor']['data'][1]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][1] > temperatureRate:
 									try: temperatureValue = round(i['object'].temperature,1)
 									except: temperatureValue = i['object'].temperature
 									try: temperatureValue2 = float(temperatureValue)+273.15
 									except: temperatureValue2 = ''
-									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureFactor,temperatureRaw)
 									instances[index]['tick'][1] = time.time()
 
 						elif i['type'] == 'BMP3XX':
@@ -393,25 +402,27 @@ def main():
 								pressureRaw = i['sensor']['data'][0]['raw']
 								pressureRate = i['sensor']['data'][0]['rate']
 								pressureOffset = i['sensor']['data'][0]['offset']
+								pressureFactor = i['sensor']['data'][0]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][0] > pressureRate:
 									try: pressureValue = round(i['object'].pressure,2)
 									except: pressureValue = i['object'].pressure
 									try: pressureValue2 = float(pressureValue)*100
 									except: pressureValue2 = ''
-									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureFactor,pressureRaw)
 									instances[index]['tick'][0] = time.time()
 							if temperatureKey:
 								temperatureRaw = i['sensor']['data'][1]['raw']
 								temperatureRate = i['sensor']['data'][1]['rate']
 								temperatureOffset = i['sensor']['data'][1]['offset']
+								temperatureFactor = i['sensor']['data'][1]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][1] > temperatureRate:
 									try: temperatureValue = round(i['object'].temperature,1)
 									except: temperatureValue = i['object'].temperature
 									try: temperatureValue2 = float(temperatureValue)+273.15
 									except: temperatureValue2 = ''
-									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureFactor,temperatureRaw)
 									instances[index]['tick'][1] = time.time()
 
 						elif i['type'] == 'HTU21D':
@@ -421,24 +432,26 @@ def main():
 								humidityRaw = i['sensor']['data'][0]['raw']
 								humidityRate = i['sensor']['data'][0]['rate']
 								humidityOffset = i['sensor']['data'][0]['offset']
+								humidityFactor = i['sensor']['data'][0]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][0] > humidityRate:
 									try: humidityValue = round(i['object'].relative_humidity,1)
 									except: humidityValue = i['object'].relative_humidity
 									humidityValue2 = humidityValue
-									Erg = getPaths(Erg,humidityValue,humidityValue2,humidityKey,humidityOffset,humidityRaw)
+									Erg = getPaths(Erg,humidityValue,humidityValue2,humidityKey,humidityOffset,humidityFactor,humidityRaw)
 									instances[index]['tick'][0] = time.time()
 							if temperatureKey:
 								temperatureRaw = i['sensor']['data'][1]['raw']
 								temperatureRate = i['sensor']['data'][1]['rate']
 								temperatureOffset = i['sensor']['data'][1]['offset']
+								temperatureFactor = i['sensor']['data'][1]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][1] > temperatureRate:
 									try: temperatureValue = round(i['object'].temperature,1)
 									except: temperatureValue = i['object'].temperature
 									try:temperatureValue2 = float(temperatureValue)+273.15
 									except: temperatureValue2 = ''
-									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureFactor,temperatureRaw)
 									instances[index]['tick'][1] = time.time()
 
 						elif i['type'] == 'LPS3X':
@@ -448,25 +461,27 @@ def main():
 								pressureRaw = i['sensor']['data'][0]['raw']
 								pressureRate = i['sensor']['data'][0]['rate']
 								pressureOffset = i['sensor']['data'][0]['offset']
+								pressureFactor = i['sensor']['data'][0]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][0] > pressureRate:
 									try: pressureValue = round(i['object'].pressure,2)
 									except: pressureValue = i['object'].pressure
 									try: pressureValue2 = float(pressureValue)*100
 									except: pressureValue2 = ''
-									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureFactor,pressureRaw)
 									instances[index]['tick'][0] = time.time()
 							if temperatureKey:
 								temperatureRaw = i['sensor']['data'][1]['raw']
 								temperatureRate = i['sensor']['data'][1]['rate']
 								temperatureOffset = i['sensor']['data'][1]['offset']
+								temperatureFactor = i['sensor']['data'][1]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][1] > temperatureRate:
 									try: temperatureValue = round(i['object'].temperature,1)
 									except: temperatureValue = i['object'].temperature
 									try: temperatureValue2 = float(temperatureValue)+273.15
 									except: temperatureValue2 = ''
-									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureFactor,temperatureRaw)
 									instances[index]['tick'][1] = time.time()
 
 						elif i['type'] == 'MS5607-02BA03':
@@ -476,6 +491,7 @@ def main():
 								pressureRaw = i['sensor']['data'][0]['raw']
 								pressureRate = i['sensor']['data'][0]['rate']
 								pressureOffset = i['sensor']['data'][0]['offset']
+								pressureFactor = i['sensor']['data'][0]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][0] > pressureRate:
 									dig_temperature = i['object'].getDigitalTemperature()
@@ -484,19 +500,20 @@ def main():
 									try: pressureValue = round(pressure,2)
 									except: pressureValue = pressure
 									pressureValue2 = pressureValue
-									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureRaw)
+									Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureFactor,pressureRaw)
 									instances[index]['tick'][0] = time.time()
 							if temperatureKey:
 								temperatureRaw = i['sensor']['data'][1]['raw']
 								temperatureRate = i['sensor']['data'][1]['rate']
 								temperatureOffset = i['sensor']['data'][1]['offset']
+								temperatureFactor = i['sensor']['data'][1]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][1] > temperatureRate:
 									try: temperatureValue = round(i['object'].getTemperature(),1)
 									except: temperatureValue = i['object'].getTemperature()
 									try: temperatureValue2 = float(temperatureValue)+273.15
 									except: temperatureValue2 = ''
-									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureRaw)
+									Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureFactor,temperatureRaw)
 									instances[index]['tick'][1] = time.time()
 
 						elif i['type'] == 'BH1750':
@@ -505,12 +522,13 @@ def main():
 								illuminanceRaw = i['sensor']['data'][0]['raw']
 								illuminanceRate = i['sensor']['data'][0]['rate']
 								illuminanceOffset = i['sensor']['data'][0]['offset']
+								illuminanceFactor = i['sensor']['data'][0]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][0] > illuminanceRate:
 									try: illuminanceValue = round(i['object'].lux,2)
 									except: illuminanceValue = i['object'].lux
 									illuminanceValue2 = illuminanceValue
-									Erg = getPaths(Erg,illuminanceValue,illuminanceValue2,illuminanceKey,illuminanceOffset,illuminanceRaw)
+									Erg = getPaths(Erg,illuminanceValue,illuminanceValue2,illuminanceKey,illuminanceOffset,illuminanceFactor,illuminanceRaw)
 									instances[index]['tick'][0] = time.time()
 
 						elif i['type'] == 'INA260':
@@ -521,36 +539,39 @@ def main():
 								voltageRaw = i['sensor']['data'][0]['raw']
 								voltageRate = i['sensor']['data'][0]['rate']
 								voltageOffset = i['sensor']['data'][0]['offset']
+								voltageFactor = i['sensor']['data'][0]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][0] > voltageRate:
 									try: voltageValue = round(i['object'].voltage,2)
 									except: voltageValue = i['object'].voltage
 									voltageValue2 = voltageValue
-									Erg = getPaths(Erg,voltageValue,voltageValue2,voltageKey,voltageOffset,voltageRaw)
+									Erg = getPaths(Erg,voltageValue,voltageValue2,voltageKey,voltageOffset,voltageFactor,voltageRaw)
 									instances[index]['tick'][0] = time.time()
 							if currentKey:
 								currentRaw = i['sensor']['data'][1]['raw']
 								currentRate = i['sensor']['data'][1]['rate']
 								currentOffset = i['sensor']['data'][1]['offset']
+								currentFactor = i['sensor']['data'][1]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][1] > currentRate:
 									try: currentValue = round(i['object'].current,2)
 									except: currentValue = i['object'].current
 									try: currentValue2 = float(currentValue)/1000
 									except: currentValue2 = ''
-									Erg = getPaths(Erg,currentValue,currentValue2,currentKey,currentOffset,currentRaw)
+									Erg = getPaths(Erg,currentValue,currentValue2,currentKey,currentOffset,currentFactor,currentRaw)
 									instances[index]['tick'][1] = time.time()
 							if powerKey:
 								powerRaw = i['sensor']['data'][2]['raw']
 								powerRate = i['sensor']['data'][2]['rate']
 								powerOffset = i['sensor']['data'][2]['offset']
+								powerFactor = i['sensor']['data'][2]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][2] > powerRate:
 									try: powerValue = round(i['object'].power,2)
 									except: powerValue = i['object'].power
 									try: powerValue2 = float(powerValue)/1000
 									except: powerValue2 = ''
-									Erg = getPaths(Erg,powerValue,powerValue2,powerKey,powerOffset,powerRaw)
+									Erg = getPaths(Erg,powerValue,powerValue2,powerKey,powerOffset,powerFactor,powerRaw)
 									instances[index]['tick'][2] = time.time()
 
 						elif i['type'] == 'INA219':
@@ -562,47 +583,51 @@ def main():
 								busvoltageRaw = i['sensor']['data'][0]['raw']
 								busvoltageRate = i['sensor']['data'][0]['rate']
 								busvoltageOffset = i['sensor']['data'][0]['offset']
+								busvoltageFactor = i['sensor']['data'][0]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][0] > busvoltageRate:
 									try: busvoltageValue = round(i['object'].bus_voltage,2)
 									except: busvoltageValue = i['object'].bus_voltage
 									busvoltageValue2 = busvoltageValue
-									Erg = getPaths(Erg,busvoltageValue,busvoltageValue2,busvoltageKey,busvoltageOffset,busvoltageRaw)
+									Erg = getPaths(Erg,busvoltageValue,busvoltageValue2,busvoltageKey,busvoltageOffset,busvoltageFactor,busvoltageRaw)
 									instances[index]['tick'][0] = time.time()
 							if shuntvoltageKey:
 								shuntvoltageRaw = i['sensor']['data'][1]['raw']
 								shuntvoltageRate = i['sensor']['data'][1]['rate']
 								shuntvoltageOffset = i['sensor']['data'][1]['offset']
+								shuntvoltageFactor = i['sensor']['data'][1]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][1] > shuntvoltageRate:
 									try: shuntvoltageValue = round(i['object'].shunt_voltage,2)
 									except: shuntvoltageValue = i['object'].shunt_voltage
 									shuntvoltageValue2 = shuntvoltageValue
-									Erg = getPaths(Erg,shuntvoltageValue,shuntvoltageValue2,shuntvoltageKey,shuntvoltageOffset,shuntvoltageRaw)
+									Erg = getPaths(Erg,shuntvoltageValue,shuntvoltageValue2,shuntvoltageKey,shuntvoltageOffset,shuntvoltageFactor,shuntvoltageRaw)
 									instances[index]['tick'][1] = time.time()
 							if currentKey:
 								currentRaw = i['sensor']['data'][2]['raw']
 								currentRate = i['sensor']['data'][2]['rate']
 								currentOffset = i['sensor']['data'][2]['offset']
+								currentFactor = i['sensor']['data'][2]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][2] > currentRate:
 									try: currentValue = round(i['object'].current,2)
 									except: currentValue = i['object'].current
 									try: currentValue2 = float(currentValue)/1000
 									except: currentValue2 = ''
-									Erg = getPaths(Erg,currentValue,currentValue2,currentKey,currentOffset,currentRaw)
+									Erg = getPaths(Erg,currentValue,currentValue2,currentKey,currentOffset,currentFactor,currentRaw)
 									instances[index]['tick'][2] = time.time()
 							if powerKey:
 								powerRaw = i['sensor']['data'][3]['raw']
 								powerRate = i['sensor']['data'][3]['rate']
 								powerOffset = i['sensor']['data'][3]['offset']
+								powerFactor = i['sensor']['data'][3]['factor']
 								tick0 = time.time()
 								if tick0 - i['tick'][3] > powerRate:
 									try: powerValue = round(i['object'].power,2)
 									except: powerValue = i['object'].power
 									try: powerValue2 = float(powerValue)/1000
 									except: powerValue2 = ''
-									Erg = getPaths(Erg,powerValue,powerValue2,powerKey,powerOffset,powerRaw)
+									Erg = getPaths(Erg,powerValue,powerValue2,powerKey,powerOffset,powerFactor,powerRaw)
 									instances[index]['tick'][3] = time.time()
 
 						elif i['type'] == 'ADS1115' or i['type'] == 'ADS1015':
@@ -612,12 +637,13 @@ def main():
 									A0raw = i['sensor']['data'][ii]['raw']
 									A0Rate = i['sensor']['data'][ii]['rate']
 									A0offset = i['sensor']['data'][ii]['offset']
+									A0factor = i['sensor']['data'][ii]['factor']
 									A0Ranges = i['sensor']['data'][ii]['ranges']
 									tick0 = time.time()
 									if tick0 - i['tick'][ii] > A0Rate:
 										A0value = i['sensor']['data'][ii]['object'].value
 										A0voltage = i['sensor']['data'][ii]['object'].voltage
-										Erg = getPaths2(Erg, A0Ranges, A0value, A0voltage, A0key, A0offset, A0raw)
+										Erg = getPaths2(Erg, A0Ranges, A0value, A0voltage, A0key, A0offset, A0factor, A0raw)
 										instances[index]['tick'][ii] = time.time()
 
 					except Exception as e:
@@ -634,113 +660,4 @@ def main():
 
 if __name__ == '__main__':
 	main()
-
-'''
-def work_ADS1115(name,data):
-
-
-
-
-
-	A0key = data['data'][0]['SKkey']
-	A1key = data['data'][1]['SKkey']
-	A2key = data['data'][2]['SKkey']
-	A3key = data['data'][3]['SKkey']
-
-	if A0key or A1key or A2key or A3key:
-		import adafruit_ads1x15.ads1115 as ADS
-		from adafruit_ads1x15.analog_in import AnalogIn
-		from collections import OrderedDict
-
-		address = data['address']
-		gain = 1
-		if 'sensorSettings' in data:
-			if 'gain' in data['sensorSettings']:
-				try: 
-					gain = eval(data['sensorSettings']['gain'])
-				except: pass
-		i2c = busio.I2C(board.SCL, board.SDA)
-		ads = ADS.ADS1115(i2c, address=int(address, 16), gain=gain)
-
-		if A0key: 
-			A0chan = AnalogIn(ads, ADS.P0)
-			A0raw = data['data'][0]['raw']
-			A0rate = data['data'][0]['rate']
-			A0offset = data['data'][0]['offset']
-			A0Ranges = []
-			if 'magnitudeSettings' in data['data'][0]: 
-				A0settings = data['data'][0]['magnitudeSettings']
-				A0Ranges = getRanges(A0settings)
-		if A1key: 
-			A1chan = AnalogIn(ads, ADS.P1)
-			A1raw = data['data'][1]['raw']
-			A1rate = data['data'][1]['rate']
-			A1offset = data['data'][1]['offset']
-			A1Ranges = []
-			if 'magnitudeSettings' in data['data'][1]: 
-				A1settings = data['data'][1]['magnitudeSettings']
-				A1Ranges = getRanges(A1settings)
-		if A2key: 
-			A2chan = AnalogIn(ads, ADS.P2)
-			A2raw = data['data'][2]['raw']
-			A2rate = data['data'][2]['rate']
-			A2offset = data['data'][2]['offset']
-			A2Ranges = []
-			if 'magnitudeSettings' in data['data'][2]: 
-				A2settings = data['data'][2]['magnitudeSettings']
-				A2Ranges = getRanges(A2settings)
-		if A3key: 
-			A3chan = AnalogIn(ads, ADS.P3)
-			A3raw = data['data'][3]['raw']
-			A3rate = data['data'][3]['rate']
-			A3offset = data['data'][3]['offset']
-			A3Ranges = []
-			if 'magnitudeSettings' in data['data'][3]: 
-				A3settings = data['data'][3]['magnitudeSettings']
-				A3Ranges = getRanges(A3settings)
-
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		port = data['port']
-		tick1 = time.time()
-		tick2 = tick1
-		tick3 = tick1
-		tick4 = tick1
-		while True:
-			time.sleep(0.1)
-			try:
-				Erg=''
-				if A0key:
-					tick0 = time.time()
-					if tick0 - tick1 > A0rate:
-						A0value = A0chan.value
-						A0voltage = A0chan.voltage
-						Erg += getPaths(A0Ranges,A0value,A0voltage,A0key,A0offset,A0raw)
-						tick1 = time.time()
-				if A1key:
-					tick0 = time.time()
-					if tick0 - tick2 > A1rate:
-						A1value = A1chan.value
-						A1voltage = A1chan.voltage
-						Erg += getPaths(A1Ranges,A1value,A1voltage,A1key,A1offset,A1raw)
-						tick2 = time.time()
-				if A2key:
-					tick0 = time.time()
-					if tick0 - tick3 > A2rate:
-						A2value = A2chan.value
-						A2voltage = A2chan.voltage
-						Erg += getPaths(A2Ranges,A2value,A2voltage,A2key,A2offset,A2raw)
-						tick3 = time.time()
-				if A3key:
-					tick0 = time.time()
-					if tick0 - tick4 > A3rate:
-						A3value = A3chan.value
-						A3voltage = A3chan.voltage
-						Erg += getPaths(A3Ranges,A3value,A3voltage,A3key,A3offset,A3raw)
-						tick4 = time.time()
-				if Erg:		
-					SignalK='{"updates":[{"$source":"OpenPlotter.I2C.'+name+'","values":['
-					SignalK+=Erg[0:-1]+']}]}\n'		
-					sock.sendto(SignalK.encode('utf-8'), ('127.0.0.1', port))
-			except Exception as e: print ("ADS1115 reading failed: "+str(e))
-
-'''
+	

@@ -1,282 +1,338 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
-"POT-Creation-Date: 2020-11-01 18:15+0100\n"
-"PO-Revision-Date: 2022-06-01 19:10\n"
+"POT-Creation-Date: 2022-11-18 20:09+0100\n"
+"PO-Revision-Date: 2022-11-25 21:30+0100\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.7.1\n"
+"X-Generator: Poedit 2.3\n"
 "X-Poedit-Basepath: ../../..\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-SearchPath-0: .\n"
 "X-Crowdin-Project: openplotter\n"
 "X-Crowdin-Project-ID: 289888\n"
 "X-Crowdin-Language: cs\n"
 "X-Crowdin-File: openplotter-i2c.po\n"
 "X-Crowdin-File-ID: 15\n"
+"X-Poedit-SearchPath-0: .\n"
 
-#: i2cPostInstall.py:28
+#: data/openplotter-i2c.desktop:3
+msgid "I2C"
+msgstr "I2C"
+
+#: data/openplotter-i2c.desktop:5
+msgid "openplotter-i2c"
+msgstr "openplotter-i2c"
+
+#: i2cPostInstall.py:29
 msgid "Installing python packages..."
 msgstr "Instalování balíčků pro Python..."
 
-#: i2cPostInstall.py:31 i2cPostInstall.py:40 i2cPostInstall.py:46
-#: i2cPreUninstall.py:33 i2cPreUninstall.py:39
+#: i2cPostInstall.py:32 i2cPostInstall.py:41 i2cPostInstall.py:47
+#: i2cPreUninstall.py:32
 msgid "DONE"
 msgstr "Hotovo"
 
-#: i2cPostInstall.py:32 i2cPostInstall.py:41 i2cPostInstall.py:47
-#: i2cPreUninstall.py:34 i2cPreUninstall.py:40
+#: i2cPostInstall.py:33 i2cPostInstall.py:42 i2cPostInstall.py:48
+#: i2cPreUninstall.py:33
 msgid "FAILED: "
 msgstr "Chyba: "
 
-#: i2cPostInstall.py:34
-msgid "Adding openplotter-i2c-read service..."
-msgstr "Přidávání služby openplotter-i2c-read..."
+#: i2cPostInstall.py:35
+msgid "Checking access to Signal K server..."
+msgstr "Kontrola přístupu k serveru Signal K..."
 
-#: i2cPostInstall.py:43
+#: i2cPostInstall.py:44
 msgid "Setting version..."
 msgstr "Nastavuji verzi..."
 
-#: i2cPreUninstall.py:27
-msgid "Removing openplotter-i2c-read service..."
-msgstr "Odstraňuji službu openplotter-i2c-read..."
-
-#: i2cPreUninstall.py:36
+#: i2cPreUninstall.py:29
 msgid "Removing version..."
 msgstr "Odstraňuji verzi..."
 
-#: openplotterI2c.py:41 openplotterI2c.py:42 openplotterI2c.py:43
-#: openplotterI2c.py:45
-msgid "pressure"
-msgstr "tlak"
+#: openplotterI2c.py:42
+msgid "bus voltage"
+msgstr "napětí na sběrnici"
 
-#: openplotterI2c.py:41 openplotterI2c.py:42 openplotterI2c.py:43
-#: openplotterI2c.py:44 openplotterI2c.py:45
-msgid "temperature"
-msgstr "teplota"
+#: openplotterI2c.py:42
+msgid "shunt voltage"
+msgstr "napětí bočníku"
 
-#: openplotterI2c.py:41 openplotterI2c.py:44
-msgid "humidity"
-msgstr "vlhkost"
-
-#: openplotterI2c.py:46
-msgid "voltage"
-msgstr "napětí"
-
-#: openplotterI2c.py:46
+#: openplotterI2c.py:42 openplotterI2c.py:43
 msgid "current"
 msgstr "proud"
 
-#: openplotterI2c.py:46
+#: openplotterI2c.py:42 openplotterI2c.py:43
 msgid "power"
 msgstr "napájení"
 
-#: openplotterI2c.py:58
+#: openplotterI2c.py:43
+msgid "voltage"
+msgstr "napětí"
+
+#: openplotterI2c.py:44
+msgid "illuminance"
+msgstr "osvětlení"
+
+#: openplotterI2c.py:45 openplotterI2c.py:46 openplotterI2c.py:47
+#: openplotterI2c.py:48 openplotterI2c.py:50 openplotterI2c.py:51
+msgid "pressure"
+msgstr "tlak"
+
+#: openplotterI2c.py:45 openplotterI2c.py:46 openplotterI2c.py:47
+#: openplotterI2c.py:48 openplotterI2c.py:49 openplotterI2c.py:50
+#: openplotterI2c.py:51
+msgid "temperature"
+msgstr "teplota"
+
+#: openplotterI2c.py:45 openplotterI2c.py:46 openplotterI2c.py:49
+msgid "humidity"
+msgstr "vlhkost"
+
+#: openplotterI2c.py:45
+msgid "gas"
+msgstr "plyn"
+
+#: openplotterI2c.py:63
 msgid "Help"
 msgstr "Nápověda"
 
-#: openplotterI2c.py:61 openplotterI2c.py:526 openplotterI2c.py:629
+#: openplotterI2c.py:66 openplotterI2c.py:454 openplotterI2c.py:575
 msgid "Settings"
 msgstr "Nastavení"
 
-#: openplotterI2c.py:64
+#: openplotterI2c.py:69
 msgid "I2C Addresses"
 msgstr "I2C adresy"
 
-#: openplotterI2c.py:67
+#: openplotterI2c.py:72
 msgid "Refresh"
 msgstr "Obnovit"
 
 #: openplotterI2c.py:75
+msgid "Approve"
+msgstr "Schválit"
+
+#: openplotterI2c.py:77
+msgid "Allowed"
+msgstr "Povoleno"
+
+#: openplotterI2c.py:80
+msgid "Rescue"
+msgstr "Záchrana"
+
+#: openplotterI2c.py:88
 msgid "Sensors"
 msgstr "Senzory"
 
-#: openplotterI2c.py:76
-msgid "Connections"
-msgstr "Připojení"
-
-#: openplotterI2c.py:157
+#: openplotterI2c.py:176
 msgid "Failed"
 msgstr "Chyba"
 
-#: openplotterI2c.py:169
+#: openplotterI2c.py:181
 msgid "Name"
 msgstr "Název"
 
-#: openplotterI2c.py:170
+#: openplotterI2c.py:182
 msgid "Address"
 msgstr "Adresa"
 
-#: openplotterI2c.py:171
+#: openplotterI2c.py:183
+msgid "Channel"
+msgstr "Kanál"
+
+#: openplotterI2c.py:184
 msgid "Magnitude"
 msgstr "Rozsah"
 
-#: openplotterI2c.py:172 openplotterI2c.py:606
+#: openplotterI2c.py:185 openplotterI2c.py:548
 msgid "Signal K key"
 msgstr "Signal K klíč"
 
-#: openplotterI2c.py:173
+#: openplotterI2c.py:186
 msgid "Rate"
 msgstr "Interval"
 
-#: openplotterI2c.py:174 openplotterI2c.py:625
+#: openplotterI2c.py:187 openplotterI2c.py:567
 msgid "Offset"
 msgstr "Posun"
 
-#: openplotterI2c.py:175
+#: openplotterI2c.py:188 openplotterI2c.py:571
+msgid "Scaling factor"
+msgstr "Poměr měřítka"
+
+#: openplotterI2c.py:189
 msgid "Raw"
 msgstr "Raw"
 
-#: openplotterI2c.py:176
+#: openplotterI2c.py:190
 msgid "Sensor Settings"
 msgstr "Nastavení senzoru"
 
-#: openplotterI2c.py:177
+#: openplotterI2c.py:191
 msgid "Magnitude Settings"
 msgstr "Nastavení velikosti"
 
-#: openplotterI2c.py:183
+#: openplotterI2c.py:197
 msgid "Add"
 msgstr "Přidat"
 
-#: openplotterI2c.py:185
+#: openplotterI2c.py:199
 msgid "Remove"
 msgstr "Odstranit"
 
-#: openplotterI2c.py:188 openplotterI2c.py:600 openplotterI2c.py:610
+#: openplotterI2c.py:202 openplotterI2c.py:542 openplotterI2c.py:552
 msgid "Edit"
 msgstr "Upravit"
 
-#: openplotterI2c.py:225
-msgid "yes"
-msgstr "ano"
+#: openplotterI2c.py:223
+msgid " Press \"Approve\" and then \"Refresh\"."
+msgstr " Stiskněte \"Approve\" a pak \"Obnovit\"."
 
-#: openplotterI2c.py:226
-msgid "no"
-msgstr "ne"
+#: openplotterI2c.py:231
+msgid " Press \"Refresh\"."
+msgstr " Stiskněte Aktualizovat."
 
-#: openplotterI2c.py:271
-msgid "Failed. You must select a sensor."
-msgstr "Chyba. Musíte vybrat senzor."
+#: openplotterI2c.py:235
+msgid " Press \"Allowed\"."
+msgstr " Stiskněte \"Allowed\"."
 
-#: openplotterI2c.py:276
-msgid "Failed. You must provide an address."
-msgstr "Chyba. Musíte zadat adresu."
-
-#: openplotterI2c.py:281
-msgid "Failed. This address is already being used."
-msgstr "Chyba. Tato adresa se již používá."
-
-#: openplotterI2c.py:377
-msgid "I2C service is enabled"
-msgstr "Služba I2C je povolena"
-
-#: openplotterI2c.py:380
-msgid "There is nothing to send. I2C service is disabled"
-msgstr "Není co odeslat. Služba I2C je zakázána"
-
-#: openplotterI2c.py:398
-msgid "Sensor"
-msgstr "Senzor"
-
-#: openplotterI2c.py:399 openplotterI2c.py:694
-msgid "Port"
-msgstr "Port"
-
-#: openplotterI2c.py:400
-msgid "SK connection ID"
-msgstr "ID spojení SK"
-
-#: openplotterI2c.py:406
-msgid "Edit Port"
-msgstr "Upravit port"
-
-#: openplotterI2c.py:409
-msgid "Add Connection"
-msgstr "Přidat spojení"
-
-#: openplotterI2c.py:411
-msgid "Edit connection"
-msgstr "Upravit spojení"
-
-#: openplotterI2c.py:413
-msgid "Remove connection"
-msgstr "Odstranit spojení"
-
-#: openplotterI2c.py:475
-msgid "Failed. Error creating connection in Signal K"
-msgstr "Chyba při vytváření připojení k Signal K serveru"
-
-#: openplotterI2c.py:477
-msgid "Please install \"Signal K Installer\" OpenPlotter app"
-msgstr "Prosím, nainstalujte OpenPlotter aplikaci \"Instalátor Signal K\""
-
-#: openplotterI2c.py:496
-msgid "Failed. Error removing connection in Signal K"
-msgstr "Chyba. Chyba při odstraňování připojení k Signal K serveru"
-
-#: openplotterI2c.py:499
-msgid "Restarting Signal K server... "
-msgstr "Restartuji Signal K server... "
-
-#: openplotterI2c.py:505
-msgid "Signal K server restarted"
-msgstr "Signal K server byl restartován"
-
-#: openplotterI2c.py:513
-msgid "Add I2C sensor"
-msgstr "Přidat I2C senzor"
-
-#: openplotterI2c.py:519
-msgid "Supported sensors"
-msgstr "Podporované senzory"
-
-#: openplotterI2c.py:529
-msgid "Detected addresses"
-msgstr "Zjištěné adresy"
-
-#: openplotterI2c.py:617
-msgid "Add raw values"
-msgstr "Přidat raw hodnotu"
-
-#: openplotterI2c.py:621
-msgid "Rate (seconds)"
-msgstr "Interval (sekundy)"
-
-#: ports.py:33
-msgid "I2C Sensors"
-msgstr "I2C senzory"
-
-#: startup.py:39
-msgid "Checking I2C sensors..."
-msgstr "Kontrola I2C senzorů..."
-
-#: startup.py:54
+#: openplotterI2c.py:244 startup.py:68
 msgid "Your Raspberry Pi is too old."
 msgstr "Váše Raspberry Pi je příliš staré."
 
-#: startup.py:58
-msgid "I2C enabled"
-msgstr "I2C povoleno"
-
-#: startup.py:61
-msgid "running"
-msgstr "běží"
-
-#: startup.py:62
-msgid " | not running"
-msgstr " Není spuštěno"
-
-#: startup.py:64 startup.py:65
+#: openplotterI2c.py:248 startup.py:77
 msgid "Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces."
 msgstr "Prosím povolte I2C rozhraní v Nastavení -> Raspberry Pi konfigurace -> Rozhraní."
 
-#: startup.py:80 startup.py:81
-msgid "There is no Signal K connection for sensor: "
-msgstr "Pro senzor neexistuje žádné připojení k Signal K: "
+#: openplotterI2c.py:281
+msgid "yes"
+msgstr "ano"
 
+#: openplotterI2c.py:282
+msgid "no"
+msgstr "ne"
+
+#: openplotterI2c.py:307
+msgid "Failed. You must select a sensor."
+msgstr "Chyba. Musíte vybrat senzor."
+
+#: openplotterI2c.py:312
+msgid "Failed. You must provide an address."
+msgstr "Chyba. Musíte zadat adresu."
+
+#: openplotterI2c.py:318
+msgid "Failed. This address/channel is already being used."
+msgstr "Chyba. Tato adresa se již používá."
+
+#: openplotterI2c.py:419
+msgid "I2C service is enabled"
+msgstr "Služba I2C je povolena"
+
+#: openplotterI2c.py:421
+msgid "There is nothing to send. I2C service is disabled"
+msgstr "Není co odeslat. Služba I2C je zakázána"
+
+#: openplotterI2c.py:441
+msgid "Add I2C sensor"
+msgstr "Přidat I2C senzor"
+
+#: openplotterI2c.py:447
+msgid "Supported sensors"
+msgstr "Podporované senzory"
+
+#: openplotterI2c.py:457
+msgid "Detected addresses"
+msgstr "Zjištěné adresy"
+
+#: openplotterI2c.py:468
+msgid "Multiplexer channel"
+msgstr "Kanál multiplexeru"
+
+#: openplotterI2c.py:469
+msgid "No multiplexer"
+msgstr "Žádný multiplexer"
+
+#: openplotterI2c.py:469
+msgid "Channel 0"
+msgstr "Kanál 0"
+
+#: openplotterI2c.py:469
+msgid "Channel 1"
+msgstr "Kanál 1"
+
+#: openplotterI2c.py:469
+msgid "Channel 2"
+msgstr "Kanál 2"
+
+#: openplotterI2c.py:469
+msgid "Channel 3"
+msgstr "Kanál 3"
+
+#: openplotterI2c.py:469
+msgid "Channel 4"
+msgstr "Kanál 4"
+
+#: openplotterI2c.py:469
+msgid "Channel 5"
+msgstr "Kanál 5"
+
+#: openplotterI2c.py:469
+msgid "Channel 6"
+msgstr "Kanál 6"
+
+#: openplotterI2c.py:469
+msgid "Channel 7"
+msgstr "Kanál 7"
+
+#: openplotterI2c.py:559
+msgid "Add raw values"
+msgstr "Přidat raw hodnotu"
+
+#: openplotterI2c.py:563
+msgid "Rate (seconds)"
+msgstr "Interval (sekundy)"
+
+#: startup.py:25
+msgid "Starting I2C sensors..."
+msgstr "Spouštění služby I2C senzorů..."
+
+#: startup.py:40
+msgid "I2C sensors started"
+msgstr "I2C senzory spuštěny"
+
+#: startup.py:42
+msgid "No sensors defined"
+msgstr "Žádné definované senzory"
+
+#: startup.py:44 startup.py:87
+msgid "I2C is in rescue mode"
+msgstr "I2C je v záchranném režimu"
+
+#: startup.py:54
+msgid "Checking I2C sensors..."
+msgstr "Kontrola I2C senzorů..."
+
+#: startup.py:72
+msgid "I2C enabled"
+msgstr "I2C povoleno"
+
+#: startup.py:81
+msgid "I2C disabled"
+msgstr "I2C zakázáno"
+
+#: startup.py:94 startup.py:102
+msgid "openplotter-i2c-read running"
+msgstr "openplotter-i2c-read běží"
+
+#: startup.py:106
+msgid "openplotter-i2c-read not running"
+msgstr "openplotter-i2c-read není spuštěno"
+
+#: startup.py:117
+msgid "Access to Signal K server validated"
+msgstr "Přístup k serveru Signal K byl ověřen"

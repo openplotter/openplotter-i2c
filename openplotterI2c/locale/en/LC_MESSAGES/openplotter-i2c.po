@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: openplotter-i2c\n"
-"POT-Creation-Date: 2022-11-05 18:46+0100\n"
-"PO-Revision-Date: 2022-11-05 18:46+0100\n"
+"POT-Creation-Date: 2022-11-18 20:09+0100\n"
+"PO-Revision-Date: 2022-11-25 21:29+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -96,7 +96,7 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
-#: openplotterI2c.py:66 openplotterI2c.py:447 openplotterI2c.py:564
+#: openplotterI2c.py:66 openplotterI2c.py:454 openplotterI2c.py:575
 msgid "Settings"
 msgstr ""
 
@@ -144,7 +144,7 @@ msgstr ""
 msgid "Magnitude"
 msgstr ""
 
-#: openplotterI2c.py:185 openplotterI2c.py:541
+#: openplotterI2c.py:185 openplotterI2c.py:548
 msgid "Signal K key"
 msgstr ""
 
@@ -152,141 +152,145 @@ msgstr ""
 msgid "Rate"
 msgstr ""
 
-#: openplotterI2c.py:187 openplotterI2c.py:560
+#: openplotterI2c.py:187 openplotterI2c.py:567
 msgid "Offset"
 msgstr ""
 
-#: openplotterI2c.py:188
-msgid "Raw"
+#: openplotterI2c.py:188 openplotterI2c.py:571
+msgid "Scaling factor"
 msgstr ""
 
 #: openplotterI2c.py:189
-msgid "Sensor Settings"
+msgid "Raw"
 msgstr ""
 
 #: openplotterI2c.py:190
+msgid "Sensor Settings"
+msgstr ""
+
+#: openplotterI2c.py:191
 msgid "Magnitude Settings"
 msgstr ""
 
-#: openplotterI2c.py:196
+#: openplotterI2c.py:197
 msgid "Add"
 msgstr ""
 
-#: openplotterI2c.py:198
+#: openplotterI2c.py:199
 msgid "Remove"
 msgstr ""
 
-#: openplotterI2c.py:201 openplotterI2c.py:535 openplotterI2c.py:545
+#: openplotterI2c.py:202 openplotterI2c.py:542 openplotterI2c.py:552
 msgid "Edit"
 msgstr ""
 
-#: openplotterI2c.py:222
+#: openplotterI2c.py:223
 msgid " Press \"Approve\" and then \"Refresh\"."
 msgstr ""
 
-#: openplotterI2c.py:230
+#: openplotterI2c.py:231
 msgid " Press \"Refresh\"."
 msgstr ""
 
-#: openplotterI2c.py:234
+#: openplotterI2c.py:235
 msgid " Press \"Allowed\"."
 msgstr ""
 
-#: openplotterI2c.py:243 startup.py:68
+#: openplotterI2c.py:244 startup.py:68
 msgid "Your Raspberry Pi is too old."
 msgstr ""
 
-#: openplotterI2c.py:247 startup.py:77
+#: openplotterI2c.py:248 startup.py:77
 msgid ""
 "Please enable I2C interface in Preferences -> Raspberry Pi configuration -> "
 "Interfaces."
 msgstr ""
 
-#: openplotterI2c.py:278
+#: openplotterI2c.py:281
 msgid "yes"
 msgstr ""
 
-#: openplotterI2c.py:279
+#: openplotterI2c.py:282
 msgid "no"
 msgstr ""
 
-#: openplotterI2c.py:304
+#: openplotterI2c.py:307
 msgid "Failed. You must select a sensor."
 msgstr ""
 
-#: openplotterI2c.py:309
+#: openplotterI2c.py:312
 msgid "Failed. You must provide an address."
 msgstr ""
 
-#: openplotterI2c.py:315
+#: openplotterI2c.py:318
 msgid "Failed. This address/channel is already being used."
 msgstr ""
 
-#: openplotterI2c.py:412
+#: openplotterI2c.py:419
 msgid "I2C service is enabled"
 msgstr ""
 
-#: openplotterI2c.py:414
+#: openplotterI2c.py:421
 msgid "There is nothing to send. I2C service is disabled"
 msgstr ""
 
-#: openplotterI2c.py:434
+#: openplotterI2c.py:441
 msgid "Add I2C sensor"
 msgstr ""
 
-#: openplotterI2c.py:440
+#: openplotterI2c.py:447
 msgid "Supported sensors"
 msgstr ""
 
-#: openplotterI2c.py:450
+#: openplotterI2c.py:457
 msgid "Detected addresses"
 msgstr ""
 
-#: openplotterI2c.py:461
+#: openplotterI2c.py:468
 msgid "Multiplexer channel"
 msgstr ""
 
-#: openplotterI2c.py:462
+#: openplotterI2c.py:469
 msgid "No multiplexer"
 msgstr ""
 
-#: openplotterI2c.py:462
+#: openplotterI2c.py:469
 msgid "Channel 0"
 msgstr ""
 
-#: openplotterI2c.py:462
+#: openplotterI2c.py:469
 msgid "Channel 1"
 msgstr ""
 
-#: openplotterI2c.py:462
+#: openplotterI2c.py:469
 msgid "Channel 2"
 msgstr ""
 
-#: openplotterI2c.py:462
+#: openplotterI2c.py:469
 msgid "Channel 3"
 msgstr ""
 
-#: openplotterI2c.py:462
+#: openplotterI2c.py:469
 msgid "Channel 4"
 msgstr ""
 
-#: openplotterI2c.py:462
+#: openplotterI2c.py:469
 msgid "Channel 5"
 msgstr ""
 
-#: openplotterI2c.py:462
+#: openplotterI2c.py:469
 msgid "Channel 6"
 msgstr ""
 
-#: openplotterI2c.py:462
+#: openplotterI2c.py:469
 msgid "Channel 7"
 msgstr ""
 
-#: openplotterI2c.py:552
+#: openplotterI2c.py:559
 msgid "Add raw values"
 msgstr ""
 
-#: openplotterI2c.py:556
+#: openplotterI2c.py:563
 msgid "Rate (seconds)"
 msgstr ""
 

@@ -203,7 +203,7 @@ def main():
 						if 'current_lsb' in instances[-1]['sensor']['sensorSettings']:
 							current_lsb = float(instances[-1]['sensor']['sensorSettings']['current_lsb'])
 						if 'cal_value' in instances[-1]['sensor']['sensorSettings']:
-							cal_value = float(instances[-1]['sensor']['sensorSettings']['cal_value'])
+							cal_value = int(instances[-1]['sensor']['sensorSettings']['cal_value'])
 						if 'power_lsb' in instances[-1]['sensor']['sensorSettings']:
 							power_lsb = float(instances[-1]['sensor']['sensorSettings']['power_lsb'])
 

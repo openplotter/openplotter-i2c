@@ -39,7 +39,7 @@ class MyFrame(wx.Frame):
 		self.i2c_sensors_def = {}
 		self.i2c_sensors_def['ADS1015'] = {'magnitudes': ['A0','A1','A2','A3'], 'SKkeys': ['','','',''],'sensorSettings':{'gain':'1'}, 'magnitudeSettings':{'range1':'0|1700-> 0|16'}, 'multiplexing':True}
 		self.i2c_sensors_def['ADS1115'] = {'magnitudes': ['A0','A1','A2','A3'], 'SKkeys': ['','','',''],'sensorSettings':{'gain':'1'}, 'magnitudeSettings':{'range1':'0|27000 -> 0|16'}, 'multiplexing':True}
-		self.i2c_sensors_def['INA219'] = {'magnitudes': [_('bus voltage'),_('shunt voltage'),_('current'),_('power')], 'SKkeys': ['','','',''], 'multiplexing': True} 
+		self.i2c_sensors_def['INA219'] = {'magnitudes': [_('bus voltage'),_('shunt voltage'),_('current'),_('power')], 'SKkeys': ['','','',''],'sensorSettings':{'current_lsb':'0.1','cal_value':'4096','power_lsb':'0.002','bus_voltage_range':'RANGE_32V','gain':'DIV_8_320MV','bus_adc_resolution':'ADCRES_12BIT_1S','shunt_adc_resolution':'ADCRES_12BIT_1S','mode':'SANDBVOLT_CONTINUOUS'}, 'multiplexing': True} 
 		self.i2c_sensors_def['INA260'] = {'magnitudes': [_('voltage'),_('current'),_('power')], 'SKkeys': ['','',''], 'multiplexing': True}		
 		self.i2c_sensors_def['BH1750'] = {'magnitudes': [_('illuminance')], 'SKkeys': ['environment.outside.illuminance'], 'multiplexing':True}
 		self.i2c_sensors_def['BME680/688'] = {'magnitudes': [_('pressure'),_('temperature'),_('humidity'),_('gas')], 'SKkeys': ['environment.outside.pressure','','environment.inside.relativeHumidity',''], 'multiplexing':True}		
@@ -238,6 +238,10 @@ class MyFrame(wx.Frame):
 		elif result[0] == 'approved':
 			self.ShowStatusBarGREEN(result[1])
 
+		data = self.conf.get('I2C', 'sensors')
+		try: self.i2c_sensors = eval(data)
+		except: self.i2c_sensors = {}
+		
 		try:
 			out = subprocess.check_output('ls /dev/i2c*', shell=True).decode(sys.stdin.encoding)
 			if '/dev/i2c-0' in out:
@@ -250,10 +254,6 @@ class MyFrame(wx.Frame):
 
 		self.toolbar1.EnableTool(103,True)
 		self.toolbar2.EnableTool(201,True)
-
-		data = self.conf.get('I2C', 'sensors')
-		try: self.i2c_sensors = eval(data)
-		except: self.i2c_sensors = {}
 
 		for name in self.i2c_sensors:
 			if name in self.i2c_sensors_def: sensor = name

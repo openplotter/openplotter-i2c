@@ -36,7 +36,6 @@ class Start():
 			if i2c_sensors:
 				subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
 				subprocess.Popen('openplotter-i2c-read')
-				time.sleep(1)
 				black = _('I2C sensors started')
 			else:
 				black = _('No sensors defined')
@@ -88,8 +87,8 @@ class Check():
 			if red: red += '\n   '+msg
 			else: red = msg
 		else:
+			test = subprocess.check_output(['ps','aux']).decode(sys.stdin.encoding)
 			if i2c_sensors:
-				test = subprocess.check_output(['ps','aux']).decode(sys.stdin.encoding)
 				if 'openplotter-i2c-read' in test: 
 					msg = _('openplotter-i2c-read running')
 					if not green: green = msg
@@ -106,6 +105,15 @@ class Check():
 						msg = _('openplotter-i2c-read not running')
 						if red: red += '\n   '+msg
 						else: red = msg
+			else:
+				if 'openplotter-i2c-read' in test: 
+					msg = _('openplotter-i2c-read running')
+					if red: red += '\n   '+msg
+					else: red = msg
+				else:
+					msg = _('openplotter-i2c-read not running')
+					if not black: black = msg
+					else: black+= ' | '+msg
 
 		#access
 		skConnections = connections.Connections('I2C')

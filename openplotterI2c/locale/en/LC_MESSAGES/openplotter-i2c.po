@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: openplotter-i2c\n"
-"POT-Creation-Date: 2022-11-18 20:09+0100\n"
-"PO-Revision-Date: 2022-11-25 21:29+0100\n"
+"POT-Creation-Date: 2022-12-16 12:55+0100\n"
+"PO-Revision-Date: 2022-12-16 12:57+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -196,11 +196,11 @@ msgstr ""
 msgid " Press \"Allowed\"."
 msgstr ""
 
-#: openplotterI2c.py:244 startup.py:68
+#: openplotterI2c.py:248 startup.py:67
 msgid "Your Raspberry Pi is too old."
 msgstr ""
 
-#: openplotterI2c.py:248 startup.py:77
+#: openplotterI2c.py:252 startup.py:76
 msgid ""
 "Please enable I2C interface in Preferences -> Raspberry Pi configuration -> "
 "Interfaces."
@@ -298,38 +298,38 @@ msgstr ""
 msgid "Starting I2C sensors..."
 msgstr ""
 
-#: startup.py:40
+#: startup.py:39
 msgid "I2C sensors started"
 msgstr ""
 
-#: startup.py:42
+#: startup.py:41
 msgid "No sensors defined"
 msgstr ""
 
-#: startup.py:44 startup.py:87
+#: startup.py:43 startup.py:86
 msgid "I2C is in rescue mode"
 msgstr ""
 
-#: startup.py:54
+#: startup.py:53
 msgid "Checking I2C sensors..."
 msgstr ""
 
-#: startup.py:72
+#: startup.py:71
 msgid "I2C enabled"
 msgstr ""
 
-#: startup.py:81
+#: startup.py:80
 msgid "I2C disabled"
 msgstr ""
 
-#: startup.py:94 startup.py:102
+#: startup.py:93 startup.py:101 startup.py:110
 msgid "openplotter-i2c-read running"
 msgstr ""
 
-#: startup.py:106
+#: startup.py:105 startup.py:114
 msgid "openplotter-i2c-read not running"
 msgstr ""
 
-#: startup.py:117
+#: startup.py:125
 msgid "Access to Signal K server validated"
 msgstr ""

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
-"POT-Creation-Date: 2022-11-18 20:09+0100\n"
-"PO-Revision-Date: 2022-12-16 12:58+0100\n"
+"POT-Creation-Date: 2023-02-04 12:20+0100\n"
+"PO-Revision-Date: 2023-02-04 12:23+0100\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Language: el\n"
@@ -101,7 +101,7 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
-#: openplotterI2c.py:66 openplotterI2c.py:454 openplotterI2c.py:575
+#: openplotterI2c.py:66 openplotterI2c.py:453 openplotterI2c.py:574
 msgid "Settings"
 msgstr ""
 
@@ -149,7 +149,7 @@ msgstr ""
 msgid "Magnitude"
 msgstr ""
 
-#: openplotterI2c.py:185 openplotterI2c.py:548
+#: openplotterI2c.py:185 openplotterI2c.py:547
 msgid "Signal K key"
 msgstr ""
 
@@ -157,11 +157,11 @@ msgstr ""
 msgid "Rate"
 msgstr ""
 
-#: openplotterI2c.py:187 openplotterI2c.py:567
+#: openplotterI2c.py:187 openplotterI2c.py:566
 msgid "Offset"
 msgstr ""
 
-#: openplotterI2c.py:188 openplotterI2c.py:571
+#: openplotterI2c.py:188 openplotterI2c.py:570
 msgid "Scaling factor"
 msgstr ""
 
@@ -185,7 +185,7 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#: openplotterI2c.py:202 openplotterI2c.py:542 openplotterI2c.py:552
+#: openplotterI2c.py:202 openplotterI2c.py:541 openplotterI2c.py:551
 msgid "Edit"
 msgstr ""
 
@@ -201,103 +201,99 @@ msgstr ""
 msgid " Press \"Allowed\"."
 msgstr ""
 
-#: openplotterI2c.py:244 startup.py:68
-msgid "Your Raspberry Pi is too old."
-msgstr ""
-
-#: openplotterI2c.py:248 startup.py:77
+#: openplotterI2c.py:250 startup.py:71
 msgid "Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces."
 msgstr ""
 
-#: openplotterI2c.py:281
+#: openplotterI2c.py:280
 msgid "yes"
 msgstr ""
 
-#: openplotterI2c.py:282
+#: openplotterI2c.py:281
 msgid "no"
 msgstr ""
 
-#: openplotterI2c.py:307
+#: openplotterI2c.py:306
 msgid "Failed. You must select a sensor."
 msgstr ""
 
-#: openplotterI2c.py:312
+#: openplotterI2c.py:311
 msgid "Failed. You must provide an address."
 msgstr ""
 
-#: openplotterI2c.py:318
+#: openplotterI2c.py:317
 msgid "Failed. This address/channel is already being used."
 msgstr ""
 
-#: openplotterI2c.py:419
+#: openplotterI2c.py:418
 msgid "I2C service is enabled"
 msgstr ""
 
-#: openplotterI2c.py:421
+#: openplotterI2c.py:420
 msgid "There is nothing to send. I2C service is disabled"
 msgstr ""
 
-#: openplotterI2c.py:441
+#: openplotterI2c.py:440
 msgid "Add I2C sensor"
 msgstr ""
 
-#: openplotterI2c.py:447
+#: openplotterI2c.py:446
 msgid "Supported sensors"
 msgstr ""
 
-#: openplotterI2c.py:457
+#: openplotterI2c.py:456
 msgid "Detected addresses"
 msgstr ""
 
-#: openplotterI2c.py:468
+#: openplotterI2c.py:467
 msgid "Multiplexer channel"
 msgstr ""
 
-#: openplotterI2c.py:469
+#: openplotterI2c.py:468
 msgid "No multiplexer"
 msgstr ""
 
-#: openplotterI2c.py:469
+#: openplotterI2c.py:468
 msgid "Channel 0"
 msgstr ""
 
-#: openplotterI2c.py:469
+#: openplotterI2c.py:468
 msgid "Channel 1"
 msgstr ""
 
-#: openplotterI2c.py:469
+#: openplotterI2c.py:468
 msgid "Channel 2"
 msgstr ""
 
-#: openplotterI2c.py:469
+#: openplotterI2c.py:468
 msgid "Channel 3"
 msgstr ""
 
-#: openplotterI2c.py:469
+#: openplotterI2c.py:468
 msgid "Channel 4"
 msgstr ""
 
-#: openplotterI2c.py:469
+#: openplotterI2c.py:468
 msgid "Channel 5"
 msgstr ""
 
-#: openplotterI2c.py:469
+#: openplotterI2c.py:468
 msgid "Channel 6"
 msgstr ""
 
-#: openplotterI2c.py:469
+#: openplotterI2c.py:468
 msgid "Channel 7"
 msgstr ""
 
-#: openplotterI2c.py:559
+#: openplotterI2c.py:558
 msgid "Add raw values"
 msgstr ""
 
-#: openplotterI2c.py:563
+#: openplotterI2c.py:562
 msgid "Rate (seconds)"
 msgstr ""
 
-#: startup.py:25
+#: startup.py:26
 msgid "Starting I2C sensors..."
 msgstr ""
 
@@ -309,7 +305,7 @@ msgstr ""
 msgid "No sensors defined"
 msgstr ""
 
-#: startup.py:44 startup.py:87
+#: startup.py:44 startup.py:85
 msgid "I2C is in rescue mode"
 msgstr ""
 
@@ -317,22 +313,22 @@ msgstr ""
 msgid "Checking I2C sensors..."
 msgstr ""
 
-#: startup.py:72
-msgid "I2C enabled"
-msgstr ""
-
-#: startup.py:81
+#: startup.py:75
 msgid "I2C disabled"
 msgstr ""
 
-#: startup.py:94 startup.py:102
+#: startup.py:79
+msgid "I2C enabled"
+msgstr ""
+
+#: startup.py:92 startup.py:100 startup.py:109
 msgid "openplotter-i2c-read running"
 msgstr ""
 
-#: startup.py:106
+#: startup.py:104 startup.py:113
 msgid "openplotter-i2c-read not running"
 msgstr ""
 
-#: startup.py:117
+#: startup.py:124
 msgid "Access to Signal K server validated"
 msgstr ""

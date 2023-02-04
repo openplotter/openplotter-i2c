@@ -1,3 +1,10 @@
+openplotter-i2c (3.3.10-stable) bullseye; urgency=medium
+
+  * Fix wrong message "Raspberry too old"
+  * Update translations
+
+ -- Sailoog <info@sailoog.com>  Sat, 04 Feb 2023 11:51:58 +0100
+
 openplotter-i2c (3.3.7-stable) bullseye; urgency=medium
 
   * v3

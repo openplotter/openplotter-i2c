@@ -242,15 +242,14 @@ class MyFrame(wx.Frame):
 		try: self.i2c_sensors = eval(data)
 		except: self.i2c_sensors = {}
 		
-		try:
-			out = subprocess.check_output('ls /dev/i2c*', shell=True).decode(sys.stdin.encoding)
-			if '/dev/i2c-0' in out:
-				self.ShowStatusBarRED(_('Your Raspberry Pi is too old.'))
-				return
-		except:
-			if self.i2c_sensors: 
-				self.ShowStatusBarRED(_('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.'))
-				return
+		if self.platform.isRPI:
+			if self.platform.isInstalled('raspi-config'):
+				output = subprocess.check_output('raspi-config nonint get_i2c', shell=True).decode(sys.stdin.encoding)
+				if '1' in output:
+					if self.i2c_sensors: 
+						msg = _('Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces.')
+						self.ShowStatusBarRED(msg)
+						return
 
 		self.toolbar1.EnableTool(103,True)
 		self.toolbar2.EnableTool(201,True)

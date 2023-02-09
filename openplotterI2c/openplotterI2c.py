@@ -74,7 +74,7 @@ class MyFrame(wx.Frame):
 		self.toolbar1.AddSeparator()
 		aproveSK = self.toolbar1.AddTool(105, _('Approve'), wx.Bitmap(self.currentdir+"/data/sk.png"))
 		self.Bind(wx.EVT_TOOL, self.onAproveSK, aproveSK)
-		connectionSK = self.toolbar1.AddTool(106, _('Allowed'), wx.Bitmap(self.currentdir+"/data/sk.png"))
+		connectionSK = self.toolbar1.AddTool(106, _('Reconnect'), wx.Bitmap(self.currentdir+"/data/sk.png"))
 		self.Bind(wx.EVT_TOOL, self.onConnectionSK, connectionSK)
 		self.toolbar1.AddSeparator()
 		toolRescue = self.toolbar1.AddCheckTool(107, _('Rescue'), wx.Bitmap(self.currentdir+"/data/rescue.png"))
@@ -146,9 +146,9 @@ class MyFrame(wx.Frame):
 			webbrowser.open(url, new=2)
 
 	def onConnectionSK(self,e):
-		if self.platform.skPort: 
-			url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/security/devices'
-			webbrowser.open(url, new=2)
+		self.conf.set('I2C', 'href', '')
+		self.conf.set('I2C', 'token', '')
+		self.readSensors()
 
 	def onToolRescue(self,e):
 		if self.toolbar1.GetToolState(107): self.conf.set('GENERAL', 'rescue', 'yes')
@@ -224,7 +224,7 @@ class MyFrame(wx.Frame):
 			subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
 			return
 		elif result[0] == 'error':
-			self.ShowStatusBarRED(result[1])
+			self.ShowStatusBarRED(result[1]+_(' Try "Reconnect".'))
 			subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
 			return
 		elif result[0] == 'repeat':
@@ -232,7 +232,7 @@ class MyFrame(wx.Frame):
 			subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
 			return
 		elif result[0] == 'permissions':
-			self.ShowStatusBarYELLOW(result[1]+_(' Press "Allowed".'))
+			self.ShowStatusBarYELLOW(result[1])
 			subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
 			return
 		elif result[0] == 'approved':

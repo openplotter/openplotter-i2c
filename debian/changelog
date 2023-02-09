@@ -1,3 +1,10 @@
+openplotter-i2c (3.3.12-stable) bullseye; urgency=medium
+
+  * Add Signal K reconnection option
+  * Update translations
+
+ -- Sailoog <info@sailoog.com>  Wed, 08 Feb 2023 20:27:33 +0100
+
 openplotter-i2c (3.3.10-stable) bullseye; urgency=medium
 
   * Fix wrong message "Raspberry too old"

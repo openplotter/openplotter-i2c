@@ -1,3 +1,3 @@
-version = '3.3.10'
+version = '3.3.12'
 codeName = 'STOPmaremortum'
 state = 'stable'

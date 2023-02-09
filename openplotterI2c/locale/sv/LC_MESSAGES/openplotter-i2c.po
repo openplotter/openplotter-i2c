@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: openplotter\n"
-"POT-Creation-Date: 2023-02-04 12:20+0100\n"
-"PO-Revision-Date: 2023-02-04 12:23+0100\n"
+"POT-Creation-Date: 2023-02-08 21:07+0100\n"
+"PO-Revision-Date: 2023-02-09 19:21+0100\n"
 "Last-Translator: \n"
 "Language-Team: Swedish\n"
 "Language: sv\n"
@@ -118,8 +118,8 @@ msgid "Approve"
 msgstr "Godkänn"
 
 #: openplotterI2c.py:77
-msgid "Allowed"
-msgstr "Tillåten"
+msgid "Reconnect"
+msgstr "Återanslut"
 
 #: openplotterI2c.py:80
 msgid "Rescue"
@@ -193,13 +193,13 @@ msgstr "Ändra"
 msgid " Press \"Approve\" and then \"Refresh\"."
 msgstr " Tryck på \"Godkänn\" och sedan \"Uppdatera\"."
 
+#: openplotterI2c.py:227
+msgid " Try \"Reconnect\"."
+msgstr " Prova \"Återanslut\"."
+
 #: openplotterI2c.py:231
 msgid " Press \"Refresh\"."
 msgstr " Tryck på \"Uppdatera\"."
-
-#: openplotterI2c.py:235
-msgid " Press \"Allowed\"."
-msgstr " Tryck på \"Tillåten\"."
 
 #: openplotterI2c.py:250 startup.py:71
 msgid "Please enable I2C interface in Preferences -> Raspberry Pi configuration -> Interfaces."

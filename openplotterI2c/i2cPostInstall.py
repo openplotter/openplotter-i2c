@@ -28,17 +28,8 @@ def main():
 
 	print(_('Installing python packages...'))
 	try:
-		subprocess.call(['pip3', 'install', 'websocket-client', 'adafruit-blinka','adafruit-circuitpython-tca9548a','adafruit-circuitpython-bme680','adafruit-circuitpython-ads1x15', 'adafruit-circuitpython-htu21d', 'adafruit-circuitpython-bmp280', 'adafruit-circuitpython-bme280', 'adafruit-circuitpython-bmp3xx', 'adafruit-circuitpython-ina260', 'adafruit-circuitpython-ina219', 'adafruit-circuitpython-lps35hw', 'adafruit-circuitpython-bh1750', '-U'])
+		subprocess.call(['pip3', 'install', 'adafruit-blinka','adafruit-circuitpython-tca9548a','adafruit-circuitpython-bme680','adafruit-circuitpython-ads1x15', 'adafruit-circuitpython-htu21d', 'adafruit-circuitpython-bmp280', 'adafruit-circuitpython-bme280', 'adafruit-circuitpython-bmp3xx', 'adafruit-circuitpython-ina260', 'adafruit-circuitpython-ina219', 'adafruit-circuitpython-lps35hw', 'adafruit-circuitpython-bh1750', '-U', '--break-system-packages'])
 		print(_('DONE'))
-	except Exception as e: print(_('FAILED: ')+str(e))
-
-	print(_('Checking access to Signal K server...'))
-	try:
-		from openplotterSignalkInstaller import connections
-		skConnections = connections.Connections('I2C')
-		result = skConnections.checkConnection()
-		if result[1]: print(result[1])
-		else: print(_('DONE'))
 	except Exception as e: print(_('FAILED: ')+str(e))
 
 	print(_('Setting version...'))

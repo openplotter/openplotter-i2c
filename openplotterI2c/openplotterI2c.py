@@ -24,7 +24,6 @@ from openplotterSettings import ports
 from openplotterSettings import platform
 from openplotterSettings import selectKey
 from openplotterSettings import selectConnections
-from openplotterSignalkInstaller import connections
 from .version import version
 
 class MyFrame(wx.Frame):
@@ -71,11 +70,6 @@ class MyFrame(wx.Frame):
 		self.toolbar1.AddSeparator()
 		self.refreshButton = self.toolbar1.AddTool(104, _('Refresh'), wx.Bitmap(self.currentdir+"/data/refresh.png"))
 		self.Bind(wx.EVT_TOOL, self.OnRefreshButton, self.refreshButton)
-		self.toolbar1.AddSeparator()
-		aproveSK = self.toolbar1.AddTool(105, _('Approve'), wx.Bitmap(self.currentdir+"/data/sk.png"))
-		self.Bind(wx.EVT_TOOL, self.onAproveSK, aproveSK)
-		connectionSK = self.toolbar1.AddTool(106, _('Reconnect'), wx.Bitmap(self.currentdir+"/data/sk.png"))
-		self.Bind(wx.EVT_TOOL, self.onConnectionSK, connectionSK)
 		self.toolbar1.AddSeparator()
 		toolRescue = self.toolbar1.AddCheckTool(107, _('Rescue'), wx.Bitmap(self.currentdir+"/data/rescue.png"))
 		self.Bind(wx.EVT_TOOL, self.onToolRescue, toolRescue)
@@ -140,16 +134,6 @@ class MyFrame(wx.Frame):
 	def OnRefreshButton(self, e):
 		self.readSensors()
 
-	def onAproveSK(self,e):
-		if self.platform.skPort: 
-			url = self.platform.http+'localhost:'+self.platform.skPort+'/admin/#/security/access/requests'
-			webbrowser.open(url, new=2)
-
-	def onConnectionSK(self,e):
-		self.conf.set('I2C', 'href', '')
-		self.conf.set('I2C', 'token', '')
-		self.readSensors()
-
 	def onToolRescue(self,e):
 		if self.toolbar1.GetToolState(107): self.conf.set('GENERAL', 'rescue', 'yes')
 		else: self.conf.set('GENERAL', 'rescue', 'no')
@@ -212,31 +196,8 @@ class MyFrame(wx.Frame):
 		self.onListSensorsDeselected()
 		self.ShowStatusBarBLACK(' ')
 
-		self.toolbar1.EnableTool(105,False)
 		self.toolbar1.EnableTool(103,False)
 		self.toolbar2.EnableTool(201,False)
-
-		skConnections = connections.Connections('I2C')
-		result = skConnections.checkConnection()
-		if result[0] == 'pending':
-			self.toolbar1.EnableTool(105,True)
-			self.ShowStatusBarYELLOW(result[1]+_(' Press "Approve" and then "Refresh".'))
-			subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
-			return
-		elif result[0] == 'error':
-			self.ShowStatusBarRED(result[1]+_(' Try "Reconnect".'))
-			subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
-			return
-		elif result[0] == 'repeat':
-			self.ShowStatusBarYELLOW(result[1]+_(' Press "Refresh".'))
-			subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
-			return
-		elif result[0] == 'permissions':
-			self.ShowStatusBarYELLOW(result[1])
-			subprocess.call(['pkill', '-f', 'openplotter-i2c-read'])
-			return
-		elif result[0] == 'approved':
-			self.ShowStatusBarGREEN(result[1])
 
 		data = self.conf.get('I2C', 'sensors')
 		try: self.i2c_sensors = eval(data)
@@ -439,7 +400,7 @@ class addI2c(wx.Dialog):
 		self.i2c_sensors_def = i2c_sensors_def
 		title = _('Add I2C sensor')
 
-		wx.Dialog.__init__(self, None, title=title, size=(690,360))
+		wx.Dialog.__init__(self, None, title=title, size=(690,400))
 		self.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		panel = wx.Panel(self)
 
@@ -540,12 +501,12 @@ class editI2c(wx.Dialog):
 		self.platform = platform.Platform()
 		title = _('Edit')+(' '+name+' - '+magn)
 
-		wx.Dialog.__init__(self, None, title=title, size=(500, 350))
+		wx.Dialog.__init__(self, None, title=title, size=(500, 365))
 		self.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		panel = wx.Panel(self)
 
 		titl = wx.StaticText(panel, label=_('Signal K key'))
-		self.SKkey = wx.TextCtrl(panel)
+		self.SKkey = wx.TextCtrl(panel,size=(-1, 25))
 		self.SKkey.SetValue(sk)
 
 		self.edit_skkey = wx.Button(panel, label=_('Edit'))
@@ -564,11 +525,11 @@ class editI2c(wx.Dialog):
 		self.rate.SetValue(rate)
 
 		self.offset_label = wx.StaticText(panel, label=_('Offset'))
-		self.offset = wx.TextCtrl(panel)
+		self.offset = wx.TextCtrl(panel,size=(-1, 25))
 		self.offset.SetValue(offset)
 
 		self.factor_label = wx.StaticText(panel, label=_('Scaling factor'))
-		self.factor = wx.TextCtrl(panel)
+		self.factor = wx.TextCtrl(panel,size=(-1, 25))
 		self.factor.SetValue(factor)
 
 		self.settingsLabel = wx.StaticText(panel, label=_('Settings'))

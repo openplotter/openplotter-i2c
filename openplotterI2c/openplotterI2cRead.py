@@ -19,6 +19,7 @@ import time, board, json, ssl
 from openplotterSettings import conf
 from openplotterSettings import platform
 from websocket import create_connection
+from openplotterSignalkInstaller import connections
 from collections import OrderedDict
 
 def getPaths(Erg,value,value2,key,offset,factor,raw):
@@ -279,7 +280,8 @@ def main():
 		if not instances:
 			if debug: print('Nothing to send, closing openplotter-i2c-read')
 			return
-		token = conf2.get('I2C', 'token')
+		skConnections = connections.Connections('I2C')
+		token = skConnections.token
 		ws = False
 		if token:
 			while True:

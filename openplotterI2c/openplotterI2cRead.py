@@ -78,7 +78,7 @@ def main():
 		conf2 = conf.Conf()
 		platform2 = platform.Platform()
 		if conf2.get('GENERAL', 'debug') == 'yes': debug = True
-		else: debug = False
+		else: debug = True
 		try: i2c_sensors=eval(conf2.get('I2C', 'sensors'))
 		except: i2c_sensors=[]
 		instances = []
@@ -285,6 +285,18 @@ def main():
 						else:
 							if i2c_sensors[i]['address']:
 								instances.append({'name':i,'type':'ATHX0','tick':[now,now],'sensor':i2c_sensors[i],'object':adafruit_ahtx0.AHTx0(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
+
+					elif i2c_sensors[i]['type'] == 'DPS310':
+						import adafruit_dps310
+						if i2c_sensors[i]['channel'] == 0:
+							if i2c_sensors[i]['address']:
+								instances.append({'name':i,'type':'DPS310','tick':[now,now],'sensor':i2c_sensors[i],'object':adafruit_dps310.basic.DPS310(i2c, address=int(i2c_sensors[i]['address'], 16))})
+						else:
+							if debug: 
+								print('Multiplexing not implemented for DPS310 sensors')
+								sys.stdout.flush()
+                                                                                                                        
+                                                                                                        
 
 				except Exception as e:
 					error = 'Error processing '+i+': '+str(e)
@@ -732,6 +744,41 @@ def main():
 											humidityValue2 = humidityValue
 											Erg = getPaths(Erg,humidityValue,humidityValue2,humidityKey,humidityOffset,humidityFactor,humidityRaw)
 											instances[index]['tick'][1] = time.time()
+
+								elif i['type'] == 'DPS310':
+									pressureKey = i['sensor']['data'][0]['SKkey']
+									temperatureKey = i['sensor']['data'][1]['SKkey']
+
+									if temperatureKey:
+										temperatureRaw = i['object'].temperature
+										if debug:
+											print("DPS310 temperature:",temperatureRaw)
+										temperatureRate = i['sensor']['data'][1]['rate']
+										temperatureOffset = i['sensor']['data'][1]['offset']
+										temperatureFactor = i['sensor']['data'][1]['factor']
+										tick0 = time.time()
+										if tick0 - i['tick'][0] > temperatureRate:
+											temperatureValue = temperatureRaw
+											try: temperatureValue2 = float(temperatureValue)+273.15
+											except: temperatureValue2 = ''
+											Erg = getPaths(Erg,temperatureValue,temperatureValue2,temperatureKey,temperatureOffset,temperatureFactor,temperatureRaw)
+											instances[index]['tick'][1] = time.time()
+											
+									if pressureKey:
+										pressureRaw  = i['object'].pressure
+										if debug:
+											print("DPS310 pressure:",pressureRaw,"signalk key:",pressureKey)
+										pressureRate = i['sensor']['data'][0]['rate']
+										pressureOffset = i['sensor']['data'][0]['offset']
+										pressureFactor = i['sensor']['data'][0]['factor']
+										tick0 = time.time()
+										if tick0 - i['tick'][1] > pressureRate:
+											pressureValue = pressureRaw * 100
+											pressureValue2 = pressureValue
+											Erg = getPaths(Erg,pressureValue,pressureValue2,pressureKey,pressureOffset,pressureFactor,pressureRaw)
+                                                                                        
+											instances[index]['tick'][0] = time.time()
+
 
 							except Exception as e:
 								if debug: 

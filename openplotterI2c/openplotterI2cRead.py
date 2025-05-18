@@ -155,36 +155,51 @@ def main():
 						import qwiic_bmp581
 						if i2c_sensors[i]['channel'] == 0:
 							if i2c_sensors[i]['address']:
-								# Initialize BMP581 sensor
-								bmp581 = qwiic_bmp581.QwiicBMP581(address=int(i2c_sensors[i]['address'], 16))
+								bmp581 = qwiic_bmp581.QwiicBMP581(address=int(i2c_sensors[i]['address']))
+
 								if bmp581.is_connected():
 									if bmp581.begin():
 										data = bmp581.get_sensor_data()
 										instances.append({'name':i,'type':'BMP581','tick':[now,now],'sensor':i2c_sensors[i],'object':bmp581})
-						else:
-							if i2c_sensors[i]['address'] and 'multiplexing' in i2c_sensors[i]:
-								# Note: Sparkfun's library doesn't directly support multiplexers
-								# This implementation assumes the multiplexer has been properly configured elsewhere
-								bmp581 = qwiic_bmp581.QwiicBMP581(address=int(i2c_sensors[i]['address'], 16))
-								if bmp581.connected:
-									bmp581.begin()
-									instances.append({'name':i,'type':'BMP581','tick':[now,now],'sensor':i2c_sensors[i],'object':bmp581})
+									else:
+										if debug: 
+											print('BMP581 sensor not initialized')
+											sys.stdout.flush()
+								else:
+									if debug: 
+										print('BMP581 sensor not connected')
+										sys.stdout.flush()	
+						pressure_oversampling = 4
+						temperature_oversampling = 2
+						if 'sensorSettings' in instances[-1]['sensor']:
+							if 'pressure_oversampling' in instances[-1]['sensor']['sensorSettings']:
+								try: pressure_oversampling = int(instances[-1]['sensor']['sensorSettings']['pressure_oversampling'])
+								except: pass
+							if 'temperature_oversampling' in instances[-1]['sensor']['sensorSettings']:
+								try: temperature_oversampling = int(instances[-1]['sensor']['sensorSettings']['temperature_oversampling'])
+								except: pass
+						def map_oversampling(oversampling):
+							if oversampling == 1: return 'kOversampling1x'
+							elif oversampling == 2: return 'kOversampling2x'
+							elif oversampling == 4: return 'kOversampling4x'
+							elif oversampling == 8: return 'kOversampling8x'
+							elif oversampling == 16: return 'kOversampling16x'
+							elif oversampling == 32: return 'kOversampling32x'
+							elif oversampling == 64: return 'kOversampling64x'
+							elif oversampling == 128: return 'kOversampling128x'
+							else:
+								if debug:
+									print('BMP581 sensor oversampling not valid')
+									sys.stdout.flush()
+								return 'kOversampling4x'
 						
-						# Handle sensor settings if the sensor was successfully connected
-						# if instances and instances[-1]['type'] == 'BMP581':
-						# 	pressure_oversampling = 4
-						# 	temperature_oversampling = 2
-						# 	if 'sensorSettings' in instances[-1]['sensor']:
-						# 		if 'pressure_oversampling' in instances[-1]['sensor']['sensorSettings']:
-						# 			try: pressure_oversampling = int(instances[-1]['sensor']['sensorSettings']['pressure_oversampling'])
-						# 			except: pass
-						# 		if 'temperature_oversampling' in instances[-1]['sensor']['sensorSettings']:
-						# 			try: temperature_oversampling = int(instances[-1]['sensor']['sensorSettings']['temperature_oversampling'])
-						# 			except: pass
-						# 	# BMP581 uses different API for setting oversampling
-						# 	instances[-1]['object'].set_oversampling_pressure(pressure_oversampling)
-						# 	instances[-1]['object'].set_oversampling_temperature(temperature_oversampling)
-						# 	instances[-1]['object'].set_iir_filter(3)  # Default mid-range filter setting
+						config = qwiic_bmp581.OsrOdrConfig()
+						config.osrT = config.__getattr__(map_oversampling(temperature_oversampling))
+						config.osrP = config.__getattr__(map_oversampling(pressure_oversampling))
+
+
+						instances[-1]['object'].set_osr_multiplier(config)
+						# instances[-1]['object'].set_iir_filter(3)  # Default mid-range filter setting
 
 					elif i2c_sensors[i]['type'] == 'HTU21D':
 						from adafruit_htu21d import HTU21D

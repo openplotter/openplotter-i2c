@@ -140,13 +140,20 @@ class MyFrame(wx.Frame):
 		self.output.SetSizer(sizer)
 
 	def OnToolAddresses(self,e):
-		try: addresses = subprocess.check_output(['i2cdetect', '-y', '1']).decode(sys.stdin.encoding)
+		onToolAdressTimeout = False
+		try: addresses = subprocess.check_output(['i2cdetect', '-y', '1'], timeout=1).decode(sys.stdin.encoding)
+		except subprocess.TimeoutExpired:
+			onToolAdressTimeout = True;
+			addresses=''
 		except: addresses = ''
 		self.logger.Clear()
 		self.notebook.ChangeSelection(1)
 		if addresses:
 			self.logger.BeginTextColour((55, 55, 55))
 			self.logger.WriteText(addresses)
+		elif onToolAdressTimeout:
+			self.logger.BeginTextColour((130, 0, 0))
+			self.logger.WriteText('I2C detected timed out, please check bus.')
 		else:
 			self.logger.BeginTextColour((130, 0, 0))
 			self.logger.WriteText(_('Failed'))
@@ -403,7 +410,10 @@ class addI2c(wx.Dialog):
 		addressesLabel = wx.StaticText(panel, label=_('Detected addresses'))
 		listAddresses = []
 		bus = smbus.SMBus(1)
+		addrStartTime= time.monotonic()
 		for addr in range(3, 178):
+			if (time.monotonic()-addrStartTime > 1):
+				break;
 			try:
 				bus.write_quick(addr)
 				addr = hex(addr)
@@ -417,9 +427,14 @@ class addI2c(wx.Dialog):
 
 		detectedI2c = rt.RichTextCtrl(panel, style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_DONTWRAP|wx.LC_SORT_ASCENDING)
 		detectedI2c.SetMargins((10,10))
-		try: addresses = subprocess.check_output(['i2cdetect', '-y', '1']).decode(sys.stdin.encoding)
+		addI2cTimeout = False
+		try: addresses = subprocess.check_output(['i2cdetect', '-y', '1'], timeout=1).decode(sys.stdin.encoding)
+		except subprocess.TimeoutExpired:
+			addI2cTimeout = True
+			addresses= "I2C detected timed out, please check bus."
 		except: addresses = ''
 
+		if (addI2cTimeout): detectedI2c.BeginTextColour((130, 0, 0))
 		detectedI2c.WriteText(addresses)
 
 		hline1 = wx.StaticLine(panel)

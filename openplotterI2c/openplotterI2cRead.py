@@ -240,6 +240,7 @@ def main():
 
 					elif i2c_sensors[i]['type'] == 'ADS1115' or i2c_sensors[i]['type'] == 'ADS1015':
 						from adafruit_ads1x15.analog_in import AnalogIn
+						from adafruit_ads1x15.ads1x15 import Pin as ADS_Pin
 						if i2c_sensors[i]['type'] == 'ADS1115':
 							import adafruit_ads1x15.ads1115 as ADS11
 							if i2c_sensors[i]['channel'] == 0:
@@ -248,10 +249,10 @@ def main():
 							else:
 								if i2c_sensors[i]['address']:
 									instances.append({'name':i,'type':'ADS1115','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':ADS11.ADS1115(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
-							if instances[-1]['sensor']['data'][0]['SKkey']: instances[-1]['sensor']['data'][0]['object'] = AnalogIn(instances[-1]['object'], ADS11.P0)
-							if instances[-1]['sensor']['data'][1]['SKkey']: instances[-1]['sensor']['data'][1]['object'] = AnalogIn(instances[-1]['object'], ADS11.P1)
-							if instances[-1]['sensor']['data'][2]['SKkey']: instances[-1]['sensor']['data'][2]['object'] = AnalogIn(instances[-1]['object'], ADS11.P2)
-							if instances[-1]['sensor']['data'][3]['SKkey']: instances[-1]['sensor']['data'][3]['object'] = AnalogIn(instances[-1]['object'], ADS11.P3)
+							if instances[-1]['sensor']['data'][0]['SKkey']: instances[-1]['sensor']['data'][0]['object'] = AnalogIn(instances[-1]['object'], ADS_Pin.A0)
+							if instances[-1]['sensor']['data'][1]['SKkey']: instances[-1]['sensor']['data'][1]['object'] = AnalogIn(instances[-1]['object'], ADS_Pin.A1)
+							if instances[-1]['sensor']['data'][2]['SKkey']: instances[-1]['sensor']['data'][2]['object'] = AnalogIn(instances[-1]['object'], ADS_Pin.A2)
+							if instances[-1]['sensor']['data'][3]['SKkey']: instances[-1]['sensor']['data'][3]['object'] = AnalogIn(instances[-1]['object'], ADS_Pin.A3)
 
 						elif i2c_sensors[i]['type'] == 'ADS1015':
 							import adafruit_ads1x15.ads1015 as ADS10
@@ -261,10 +262,10 @@ def main():
 							else:
 								if i2c_sensors[i]['address']:
 									instances.append({'name':i,'type':'ADS1015','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':ADS10.ADS1015(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
-							if instances[-1]['sensor']['data'][0]['SKkey']: instances[-1]['sensor']['data'][0]['object'] = AnalogIn(instances[-1]['object'], ADS10.P0)
-							if instances[-1]['sensor']['data'][1]['SKkey']: instances[-1]['sensor']['data'][1]['object'] = AnalogIn(instances[-1]['object'], ADS10.P1)
-							if instances[-1]['sensor']['data'][2]['SKkey']: instances[-1]['sensor']['data'][2]['object'] = AnalogIn(instances[-1]['object'], ADS10.P2)
-							if instances[-1]['sensor']['data'][3]['SKkey']: instances[-1]['sensor']['data'][3]['object'] = AnalogIn(instances[-1]['object'], ADS10.P3)
+							if instances[-1]['sensor']['data'][0]['SKkey']: instances[-1]['sensor']['data'][0]['object'] = AnalogIn(instances[-1]['object'], ADS_Pin.A0)
+							if instances[-1]['sensor']['data'][1]['SKkey']: instances[-1]['sensor']['data'][1]['object'] = AnalogIn(instances[-1]['object'], ADS_Pin.A1)
+							if instances[-1]['sensor']['data'][2]['SKkey']: instances[-1]['sensor']['data'][2]['object'] = AnalogIn(instances[-1]['object'], ADS_Pin.A2)
+							if instances[-1]['sensor']['data'][3]['SKkey']: instances[-1]['sensor']['data'][3]['object'] = AnalogIn(instances[-1]['object'], ADS_Pin.A3)
 
 						gain = 1
 						if 'sensorSettings' in instances[-1]['sensor']:
@@ -294,7 +295,12 @@ def main():
 						sys.stdout.flush()
 				else: i2c_sensors[i]['error'] = ''
 
-			conf2.set('I2C', 'sensors', str(i2c_sensors))
+			i2c_sensors_save = {}
+			for _n, _s in i2c_sensors.items():
+				_sc = {k: v for k, v in _s.items() if k != 'data'}
+				_sc['data'] = [{k: v for k, v in d.items() if k not in ('object', 'ranges')} for d in _s['data']]
+				i2c_sensors_save[_n] = _sc
+			conf2.set('I2C', 'sensors', str(i2c_sensors_save))
 
 			#read sensors
 			if not instances:

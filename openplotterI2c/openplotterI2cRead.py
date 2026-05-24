@@ -45,7 +45,7 @@ def getPaths2(Erg,ranges,value,voltage,key,offset,factor,raw):
 						d = c*pc/100
 						result = r2[0]+d
 					else: result = r2
-		if result: Erg.append({"path":key,"value":offset+(result*factor)})
+		if result != '': Erg.append({"path":key,"value":offset+(result*factor)})
 		else: Erg.append({"path":key,"value":None})
 	if raw and voltage and value:
 		if voltage: rawvoltage = voltage

@@ -45,7 +45,7 @@ def getPaths2(Erg,ranges,value,voltage,key,offset,factor,raw):
 						d = c*pc/100
 						result = r2[0]+d
 					else: result = r2
-		if result: Erg.append({"path":key,"value":offset+(result*factor)})
+		if result != '': Erg.append({"path":key,"value":offset+(result*factor)})
 		else: Erg.append({"path":key,"value":None})
 	if raw and voltage and value:
 		if voltage: rawvoltage = voltage
@@ -240,6 +240,32 @@ def main():
 
 					elif i2c_sensors[i]['type'] == 'ADS1115' or i2c_sensors[i]['type'] == 'ADS1015':
 						from adafruit_ads1x15.analog_in import AnalogIn
+						# Resolve ADS1x15 pin constants across library versions:
+						#   newer: adafruit_ads1x15.ads1x15.Pin.A0..A3
+						#   older: module-level P0..P3 in adafruit_ads1x15.ads1x15
+						#   oldest: module-level P0..P3 in adafruit_ads1x15.ads1115
+						try:
+							from adafruit_ads1x15.ads1x15 import Pin as _ADS_PinCls
+							_A0, _A1, _A2, _A3 = _ADS_PinCls.A0, _ADS_PinCls.A1, _ADS_PinCls.A2, _ADS_PinCls.A3
+						except (ImportError, AttributeError):
+							try:
+								from adafruit_ads1x15.ads1x15 import P0 as _A0, P1 as _A1, P2 as _A2, P3 as _A3
+							except (ImportError, AttributeError):
+								from adafruit_ads1x15.ads1115 import P0 as _A0, P1 as _A1, P2 as _A2, P3 as _A3
+						# Optional differential-mode setting via sensorSettings['diff'].
+						# Format: comma-separated pairs, e.g. "A0-A1" or "A0-A1,A2-A3".
+						# Each pair occupies the channel slot of its positive pin (A0-A1 -> slot 0).
+						# Hardware-valid pairs on ADS1x15: A0-A1, A0-A3, A1-A3, A2-A3.
+						_ads_diff = {}
+						try:
+							_d = i2c_sensors[i].get('sensorSettings', {}).get('diff', '').strip()
+							if _d:
+								_pins = {'A0': _A0, 'A1': _A1, 'A2': _A2, 'A3': _A3}
+								for _pair in _d.split(','):
+									_p, _n = [x.strip() for x in _pair.split('-')]
+									_ads_diff[int(_p[1])] = (_pins[_p], _pins[_n])
+						except: pass
+						_ads_default_pins = (_A0, _A1, _A2, _A3)
 						if i2c_sensors[i]['type'] == 'ADS1115':
 							import adafruit_ads1x15.ads1115 as ADS11
 							if i2c_sensors[i]['channel'] == 0:
@@ -248,10 +274,10 @@ def main():
 							else:
 								if i2c_sensors[i]['address']:
 									instances.append({'name':i,'type':'ADS1115','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':ADS11.ADS1115(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
-							if instances[-1]['sensor']['data'][0]['SKkey']: instances[-1]['sensor']['data'][0]['object'] = AnalogIn(instances[-1]['object'], ADS11.P0)
-							if instances[-1]['sensor']['data'][1]['SKkey']: instances[-1]['sensor']['data'][1]['object'] = AnalogIn(instances[-1]['object'], ADS11.P1)
-							if instances[-1]['sensor']['data'][2]['SKkey']: instances[-1]['sensor']['data'][2]['object'] = AnalogIn(instances[-1]['object'], ADS11.P2)
-							if instances[-1]['sensor']['data'][3]['SKkey']: instances[-1]['sensor']['data'][3]['object'] = AnalogIn(instances[-1]['object'], ADS11.P3)
+							for _ii in range(4):
+								if instances[-1]['sensor']['data'][_ii]['SKkey']:
+									_args = _ads_diff[_ii] if _ii in _ads_diff else (_ads_default_pins[_ii],)
+									instances[-1]['sensor']['data'][_ii]['object'] = AnalogIn(instances[-1]['object'], *_args)
 
 						elif i2c_sensors[i]['type'] == 'ADS1015':
 							import adafruit_ads1x15.ads1015 as ADS10
@@ -261,10 +287,10 @@ def main():
 							else:
 								if i2c_sensors[i]['address']:
 									instances.append({'name':i,'type':'ADS1015','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':ADS10.ADS1015(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
-							if instances[-1]['sensor']['data'][0]['SKkey']: instances[-1]['sensor']['data'][0]['object'] = AnalogIn(instances[-1]['object'], ADS10.P0)
-							if instances[-1]['sensor']['data'][1]['SKkey']: instances[-1]['sensor']['data'][1]['object'] = AnalogIn(instances[-1]['object'], ADS10.P1)
-							if instances[-1]['sensor']['data'][2]['SKkey']: instances[-1]['sensor']['data'][2]['object'] = AnalogIn(instances[-1]['object'], ADS10.P2)
-							if instances[-1]['sensor']['data'][3]['SKkey']: instances[-1]['sensor']['data'][3]['object'] = AnalogIn(instances[-1]['object'], ADS10.P3)
+							for _ii in range(4):
+								if instances[-1]['sensor']['data'][_ii]['SKkey']:
+									_args = _ads_diff[_ii] if _ii in _ads_diff else (_ads_default_pins[_ii],)
+									instances[-1]['sensor']['data'][_ii]['object'] = AnalogIn(instances[-1]['object'], *_args)
 
 						gain = 1
 						if 'sensorSettings' in instances[-1]['sensor']:
@@ -294,7 +320,12 @@ def main():
 						sys.stdout.flush()
 				else: i2c_sensors[i]['error'] = ''
 
-			conf2.set('I2C', 'sensors', str(i2c_sensors))
+			i2c_sensors_save = {}
+			for _n, _s in i2c_sensors.items():
+				_sc = {k: v for k, v in _s.items() if k != 'data'}
+				_sc['data'] = [{k: v for k, v in d.items() if k not in ('object', 'ranges')} for d in _s['data']]
+				i2c_sensors_save[_n] = _sc
+			conf2.set('I2C', 'sensors', str(i2c_sensors_save))
 
 			#read sensors
 			if not instances:

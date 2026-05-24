@@ -294,7 +294,12 @@ def main():
 						sys.stdout.flush()
 				else: i2c_sensors[i]['error'] = ''
 
-			conf2.set('I2C', 'sensors', str(i2c_sensors))
+			i2c_sensors_save = {}
+			for _n, _s in i2c_sensors.items():
+				_sc = {k: v for k, v in _s.items() if k != 'data'}
+				_sc['data'] = [{k: v for k, v in d.items() if k not in ('object', 'ranges')} for d in _s['data']]
+				i2c_sensors_save[_n] = _sc
+			conf2.set('I2C', 'sensors', str(i2c_sensors_save))
 
 			#read sensors
 			if not instances:

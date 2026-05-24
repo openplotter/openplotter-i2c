@@ -252,6 +252,20 @@ def main():
 								from adafruit_ads1x15.ads1x15 import P0 as _A0, P1 as _A1, P2 as _A2, P3 as _A3
 							except (ImportError, AttributeError):
 								from adafruit_ads1x15.ads1115 import P0 as _A0, P1 as _A1, P2 as _A2, P3 as _A3
+						# Optional differential-mode setting via sensorSettings['diff'].
+						# Format: comma-separated pairs, e.g. "A0-A1" or "A0-A1,A2-A3".
+						# Each pair occupies the channel slot of its positive pin (A0-A1 -> slot 0).
+						# Hardware-valid pairs on ADS1x15: A0-A1, A0-A3, A1-A3, A2-A3.
+						_ads_diff = {}
+						try:
+							_d = i2c_sensors[i].get('sensorSettings', {}).get('diff', '').strip()
+							if _d:
+								_pins = {'A0': _A0, 'A1': _A1, 'A2': _A2, 'A3': _A3}
+								for _pair in _d.split(','):
+									_p, _n = [x.strip() for x in _pair.split('-')]
+									_ads_diff[int(_p[1])] = (_pins[_p], _pins[_n])
+						except: pass
+						_ads_default_pins = (_A0, _A1, _A2, _A3)
 						if i2c_sensors[i]['type'] == 'ADS1115':
 							import adafruit_ads1x15.ads1115 as ADS11
 							if i2c_sensors[i]['channel'] == 0:
@@ -260,10 +274,10 @@ def main():
 							else:
 								if i2c_sensors[i]['address']:
 									instances.append({'name':i,'type':'ADS1115','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':ADS11.ADS1115(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
-							if instances[-1]['sensor']['data'][0]['SKkey']: instances[-1]['sensor']['data'][0]['object'] = AnalogIn(instances[-1]['object'], _A0)
-							if instances[-1]['sensor']['data'][1]['SKkey']: instances[-1]['sensor']['data'][1]['object'] = AnalogIn(instances[-1]['object'], _A1)
-							if instances[-1]['sensor']['data'][2]['SKkey']: instances[-1]['sensor']['data'][2]['object'] = AnalogIn(instances[-1]['object'], _A2)
-							if instances[-1]['sensor']['data'][3]['SKkey']: instances[-1]['sensor']['data'][3]['object'] = AnalogIn(instances[-1]['object'], _A3)
+							for _ii in range(4):
+								if instances[-1]['sensor']['data'][_ii]['SKkey']:
+									_args = _ads_diff[_ii] if _ii in _ads_diff else (_ads_default_pins[_ii],)
+									instances[-1]['sensor']['data'][_ii]['object'] = AnalogIn(instances[-1]['object'], *_args)
 
 						elif i2c_sensors[i]['type'] == 'ADS1015':
 							import adafruit_ads1x15.ads1015 as ADS10
@@ -273,10 +287,10 @@ def main():
 							else:
 								if i2c_sensors[i]['address']:
 									instances.append({'name':i,'type':'ADS1015','tick':[now,now,now,now],'sensor':i2c_sensors[i],'object':ADS10.ADS1015(muxInstances[i2c_sensors[i]['address']][i2c_sensors[i]['channel']-1])})
-							if instances[-1]['sensor']['data'][0]['SKkey']: instances[-1]['sensor']['data'][0]['object'] = AnalogIn(instances[-1]['object'], _A0)
-							if instances[-1]['sensor']['data'][1]['SKkey']: instances[-1]['sensor']['data'][1]['object'] = AnalogIn(instances[-1]['object'], _A1)
-							if instances[-1]['sensor']['data'][2]['SKkey']: instances[-1]['sensor']['data'][2]['object'] = AnalogIn(instances[-1]['object'], _A2)
-							if instances[-1]['sensor']['data'][3]['SKkey']: instances[-1]['sensor']['data'][3]['object'] = AnalogIn(instances[-1]['object'], _A3)
+							for _ii in range(4):
+								if instances[-1]['sensor']['data'][_ii]['SKkey']:
+									_args = _ads_diff[_ii] if _ii in _ads_diff else (_ads_default_pins[_ii],)
+									instances[-1]['sensor']['data'][_ii]['object'] = AnalogIn(instances[-1]['object'], *_args)
 
 						gain = 1
 						if 'sensorSettings' in instances[-1]['sensor']:

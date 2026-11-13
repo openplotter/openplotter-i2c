@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Openplotter. If not, see <http://www.gnu.org/licenses/>.
 
-import time, board, json, ssl, sys
+import time, board, json, ssl, sys, select
 from openplotterSettings import conf
 from openplotterSettings import platform
 from websocket import create_connection
@@ -747,6 +747,18 @@ def main():
 										sys.stdout.flush()
 									if ws: ws.close()
 									ws = False
+						# Read what Signal K sends so its heartbeat pings get answered (recv_data_frame
+						# replies to a ping with a pong); without this the server drops the connection.
+						if ws:
+							try:
+								while select.select([ws.sock], [], [], 0)[0]:
+									ws.recv_data_frame(True)
+							except Exception as e:
+								if debug: 
+									print('Error reading from Signal K server:'+str(e))
+									sys.stdout.flush()
+								ws.close()
+								ws = False
 
 
 if __name__ == '__main__':

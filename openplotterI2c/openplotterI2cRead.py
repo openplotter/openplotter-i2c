@@ -68,7 +68,7 @@ def getRanges(settings):
 					try:
 						e = c[1].split('|')
 						f = [float(e[0].lstrip()),float(e[1].lstrip())]
-					except: f = c[1].lstrip()
+					except: f = float(c[1].lstrip())
 					ranges.append([[int(d[0].lstrip()),int(d[1].lstrip())],f])
 				except: pass
 	return ranges

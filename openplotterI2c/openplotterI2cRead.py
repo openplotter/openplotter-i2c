@@ -23,16 +23,16 @@ from openplotterSignalkInstaller import connections
 from collections import OrderedDict
 
 def getPaths(Erg,value,value2,key,offset,factor,raw):
-	if value2: Erg.append({"path":key,"value":offset+(value2*factor)})
+	if value2 is not None and value2 != '': Erg.append({"path":key,"value":offset+(value2*factor)})
 	else: Erg.append({"path":key,"value":None})
 	if raw:
-		if value: Erg.append({"path":key+'.raw',"value":value})
+		if value is not None and value != '': Erg.append({"path":key+'.raw',"value":value})
 		else: Erg.append({"path":key+'.raw',"value":None})
 	return Erg
 
 def getPaths2(Erg,ranges,value,voltage,key,offset,factor,raw):
 	if ranges:
-		result = ''
+		result = None
 		for i,v in enumerate(ranges):
 			r1 = ranges[i][0]
 			r2 = ranges[i][1]
@@ -45,12 +45,12 @@ def getPaths2(Erg,ranges,value,voltage,key,offset,factor,raw):
 						d = c*pc/100
 						result = r2[0]+d
 					else: result = r2
-		if result: Erg.append({"path":key,"value":offset+(result*factor)})
+		if result is not None: Erg.append({"path":key,"value":offset+(result*factor)})
 		else: Erg.append({"path":key,"value":None})
-	if raw and voltage and value:
-		if voltage: rawvoltage = voltage
+	if raw:
+		if voltage is not None and voltage != '': rawvoltage = voltage
 		else: rawvoltage = None
-		if value: rawvalue = value
+		if value is not None and value != '': rawvalue = value
 		else: rawvalue = None
 		rawresult = {"value":rawvalue,"voltage":rawvoltage}
 		Erg.append({"path": key+".raw","value": rawresult}) 

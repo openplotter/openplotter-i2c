@@ -51,7 +51,7 @@ class MyFrame(wx.Frame):
 		self.i2c_sensors_def['HTU21D'] = {'magnitudes': [_('humidity'),_('temperature')], 'SKkeys': ['environment.inside.relativeHumidity',''], 'multiplexing':True}
 		self.i2c_sensors_def['LPS3X'] = {'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure',''], 'multiplexing':True}
 		self.i2c_sensors_def['MS5607-02BA03'] = {'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure',''], 'multiplexing':False}
-
+		self.i2c_sensors_def['DPS310'] = {'magnitudes': [_('pressure'),_('temperature')], 'SKkeys': ['environment.outside.pressure',''], 'multiplexing':False}                
 		wx.Frame.__init__(self, None, title='I2C '+version, size=(800,444))
 		self.SetFont(wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		icon = wx.Icon(self.currentdir+"/data/openplotter-i2c.png", wx.BITMAP_TYPE_PNG)

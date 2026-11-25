@@ -35,9 +35,9 @@ class Ms5607:
 		bytes = bus.read_i2c_block_data(self.DEVICE_ADDRESS, register, 3)
 		return (bytes[0] << 16) + (bytes[1] << 8) + bytes[2]
 	def hectoPascalToInHg(self, milliBar):
-		return milliBar * 29.5333727 / 100000
+		return milliBar * 100.0 / 3386.389
 	def inHgToHectoPascal(self, inHg):
-		return 100 * 1000 * inHg / 29.5333727
+		return inHg * 3386.389 / 100.0
 	def getImperialAltitude(self, currentMilliBar, baseMilliBar):
 		return (1 - math.pow(currentMilliBar / baseMilliBar, .190284)) * 145366.45
 	def getMetricAltitude(self, currentMilliBar, baseMilliBar):
@@ -66,16 +66,24 @@ class Ms5607:
 		return self.readAdc(self._CMD_ADC_D2 + self._CMD_ADC_4096)
 	def getTemperature(self):
 		dT = self.getDigitalTemperature() - self.coefficients[4] * math.pow(2, 8)
-		return (2000 + dT * self.coefficients[5] / math.pow(2, 23)) / 100
+		temperature = 2000 + dT * self.coefficients[5] / math.pow(2, 23)
+		if temperature < 2000:
+			temperature -= dT * dT / math.pow(2, 31)
+		return temperature / 100
 
 	def convertPressureTemperature(self, pressure, temperature):
 		# Calculate 1st order pressure and temperature
 		dT = temperature - self.coefficients[4] * 256
-		# Offset at actual temperature
-		off = self.coefficients[1] * 4 + ((float(dT) / 2048) * (float(self.coefficients[3]) / 1024))
-		# Sensitivity at actual temperature
-		sens = self.coefficients[0] * 2 + ((float(dT) / 4096) * (float(self.coefficients[2]) / 1024))
-		# Temperature compensated pressure
-		press = (float(pressure) / 2048) * (float(sens) / 1024) - off
-		return press
-
+		temp = 2000 + dT * self.coefficients[5] / 2**23
+		# MS5607 datasheet: first-order offset and sensitivity, then cold correction.
+		off = self.coefficients[1] * 2**17 + dT * self.coefficients[3] / 2**6
+		sens = self.coefficients[0] * 2**16 + dT * self.coefficients[2] / 2**7
+		if temp < 2000:
+			delta = (temp - 2000)**2
+			off -= 61 * delta / 16
+			sens -= 2 * delta
+			if temp < -1500:
+				delta = (temp + 1500)**2
+				off -= 15 * delta
+				sens -= 8 * delta
+		return (pressure * sens / 2**21 - off) / 2**15

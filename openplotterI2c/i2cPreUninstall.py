@@ -29,6 +29,7 @@ def main():
 	try:
 		subprocess.call(['systemctl', 'disable', 'openplotter-i2c-read'])
 		subprocess.call(['systemctl', 'stop', 'openplotter-i2c-read'])
+		subprocess.call(['rm', '-f', conf2.home+'/.config/systemd/user/openplotter-i2c-read.service'])
 		subprocess.call(['systemctl', 'daemon-reload'])
 		print(_('DONE'))
 	except Exception as e: print(_('FAILED: ')+str(e))
